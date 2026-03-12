@@ -56,11 +56,11 @@ export default function ItemDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ヘッダー */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="flex items-center px-4 py-3 gap-2">
           <button
             onClick={() => router.back()}
-            className="p-2 -ml-2 rounded-xl text-gray-500 active:bg-gray-100"
+            className="p-2 -ml-2 text-gray-500 active:bg-gray-100 rounded-xl"
           >
             ‹ 戻る
           </button>
@@ -76,7 +76,7 @@ export default function ItemDetailPage() {
 
       <div className="pb-8">
         {/* 写真 */}
-        {record.photoUrl && (
+        {record.photoUrl ? (
           <div className="bg-black">
             <Image
               src={record.photoUrl}
@@ -86,14 +86,12 @@ export default function ItemDetailPage() {
               className="object-contain w-full max-h-72"
             />
           </div>
-        )}
-        {!record.photoUrl && (
+        ) : (
           <div className="bg-gray-100 flex items-center justify-center h-40">
             <span className="text-5xl">📷</span>
           </div>
         )}
 
-        {/* 基本情報 */}
         <div className="px-4 py-4 space-y-4">
           {/* ヘッドライン */}
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
@@ -109,47 +107,26 @@ export default function ItemDetailPage() {
                   {record.packType}
                 </span>
               )}
-              {record.machineName && (
+              {record.machineNumber && (
                 <span className="bg-green-50 text-green-700 text-sm font-medium px-3 py-1 rounded-full">
-                  {record.machineName}
+                  機械 {record.machineNumber}
                 </span>
               )}
             </div>
-            {record.lineName && (
-              <p className="text-sm text-gray-500 mt-2">{record.lineName}</p>
-            )}
-            <p className="text-xs text-gray-400 mt-3">
-              {dateStr}　登録者：{record.registeredBy}
-            </p>
+            <p className="text-xs text-gray-400 mt-3">{dateStr}</p>
           </div>
 
-          {/* 設定値 */}
-          <InfoSection title="⚙️ 設定値">
-            <InfoRow label="シール温度" value={record.sealTemp} />
-            <InfoRow label="充填温度" value={record.fillTemp} />
-            <InfoRow label="スピード" value={record.speed} />
-            <InfoRow label="印字設定" value={record.printSettings} />
-            <InfoRow label="その他設定値" value={record.otherSettings} />
-          </InfoSection>
-
-          {/* 注意・備考 */}
-          {(record.notes || record.remarks) && (
-            <InfoSection title="📝 注意点・備考">
-              {record.notes && <InfoRow label="注意点" value={record.notes} highlight />}
-              {record.remarks && <InfoRow label="備考" value={record.remarks} />}
-            </InfoSection>
-          )}
-
-          {/* 製品履歴リンク */}
-          <Link href={`/product/${encodeURIComponent(record.productName)}`}>
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-center justify-between active:bg-blue-100 transition-colors">
-              <div>
-                <p className="text-blue-700 font-medium">「{record.productName}」の製品履歴</p>
-                <p className="text-blue-500 text-sm">過去の設定値・変更履歴を見る</p>
+          {/* 設定値メモ */}
+          {record.settingsMemo && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-50">
+                <h3 className="text-sm font-bold text-gray-500">⚙️ 設定値メモ</h3>
               </div>
-              <span className="text-blue-400 text-xl">›</span>
+              <div className="px-4 py-3">
+                <p className="text-base text-gray-900 whitespace-pre-wrap">{record.settingsMemo}</p>
+              </div>
             </div>
-          </Link>
+          )}
         </div>
       </div>
 
@@ -179,37 +156,6 @@ export default function ItemDetailPage() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function InfoSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-50">
-        <h3 className="text-sm font-bold text-gray-500">{title}</h3>
-      </div>
-      <div className="divide-y divide-gray-50">{children}</div>
-    </div>
-  );
-}
-
-function InfoRow({
-  label,
-  value,
-  highlight,
-}: {
-  label: string;
-  value: string;
-  highlight?: boolean;
-}) {
-  if (!value) return null;
-  return (
-    <div className={`px-4 py-3 ${highlight ? "bg-amber-50" : ""}`}>
-      <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <p className={`text-base font-medium ${highlight ? "text-amber-800" : "text-gray-900"} whitespace-pre-wrap`}>
-        {value}
-      </p>
     </div>
   );
 }
