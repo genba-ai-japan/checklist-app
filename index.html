@@ -1,49 +1,127 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>作業チェックリスト</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>現場タスク管理</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>📋 作業チェックリスト</h1>
-      <div class="stats">
-        <span id="stats-text">0 / 0 完了</span>
-        <div class="progress-bar">
-          <div class="progress-fill" id="progress-fill"></div>
+
+  <header class="app-header">
+    <h1 class="app-title">&#128203; 現場タスク管理</h1>
+  </header>
+
+  <!-- ===== カレンダーセクション ===== -->
+  <section class="card" id="section-calendar">
+    <h2 class="section-title">&#128197; カレンダー</h2>
+
+    <div class="calendar-nav">
+      <button class="nav-btn" id="prevMonth">&#10094; 前月</button>
+      <span class="month-label" id="monthLabel"></span>
+      <button class="nav-btn" id="nextMonth">次月 &#10095;</button>
+    </div>
+
+    <div class="calendar-weekdays">
+      <span class="wd wd-sun">日</span>
+      <span class="wd">月</span>
+      <span class="wd">火</span>
+      <span class="wd">水</span>
+      <span class="wd">木</span>
+      <span class="wd">金</span>
+      <span class="wd wd-sat">土</span>
+    </div>
+
+    <div class="calendar-grid" id="calendarGrid"></div>
+
+    <div class="calendar-legend">
+      <span class="legend-item"><span class="legend-today"></span>今日</span>
+      <span class="legend-item"><span class="legend-dot"></span>予定あり</span>
+    </div>
+  </section>
+
+  <!-- ===== 選択日の予定セクション ===== -->
+  <section class="card" id="section-schedule">
+    <h2 class="section-title" id="selectedDateLabel">&#128337; 予定</h2>
+
+    <div id="noDateMsg" class="hint-text">&#8592; カレンダーの日付をタップしてください</div>
+
+    <div id="scheduleArea" class="hidden">
+      <ul class="item-list" id="scheduleList"></ul>
+
+      <div class="add-form">
+        <input type="text" id="scheduleInput" class="text-input" placeholder="予定を入力..." maxlength="100" />
+        <div class="form-row">
+          <label class="form-label">繰り返し</label>
+          <select id="repeatSelect" class="select-input">
+            <option value="none">繰り返しなし</option>
+            <option value="weekly">毎週</option>
+            <option value="biweekly">2週間ごと</option>
+            <option value="monthly">毎月</option>
+          </select>
         </div>
+        <button class="btn btn-primary" id="addScheduleBtn">&#43; 予定を追加</button>
       </div>
-    </header>
+    </div>
+  </section>
 
-    <div class="input-area">
-      <input
-        type="text"
-        id="task-input"
-        placeholder="新しいタスクを入力..."
-        maxlength="100"
-      >
-      <button id="add-btn" onclick="addTask()">追加</button>
+  <!-- ===== やることリストセクション ===== -->
+  <section class="card" id="section-todo">
+    <h2 class="section-title">&#9989; やることリスト</h2>
+
+    <div class="form-row filter-row">
+      <label class="form-label">担当者で絞り込み</label>
+      <select id="filterAssignee" class="select-input">
+        <option value="all">すべて</option>
+      </select>
     </div>
 
-    <div class="filters">
-      <button class="filter-btn active" onclick="setFilter('all', this)">すべて</button>
-      <button class="filter-btn" onclick="setFilter('active', this)">未完了</button>
-      <button class="filter-btn" onclick="setFilter('completed', this)">完了済み</button>
+    <ul class="item-list" id="todoList"></ul>
+
+    <div class="add-form">
+      <input type="text" id="todoInput" class="text-input" placeholder="タスクを入力..." maxlength="100" />
+      <div class="form-row">
+        <label class="form-label">担当者</label>
+        <select id="todoAssigneeSelect" class="select-input">
+          <option value="">未設定</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="addTodoBtn">&#43; タスクを追加</button>
     </div>
+  </section>
 
-    <ul id="task-list"></ul>
+  <!-- ===== 担当者管理セクション ===== -->
+  <section class="card" id="section-assignee">
+    <h2 class="section-title">&#128100; 担当者管理</h2>
 
-    <div class="footer" id="footer">
-      <span id="remaining-count"></span>
-      <button class="clear-btn" onclick="clearCompleted()">完了済みを削除</button>
+    <ul class="item-list" id="assigneeList"></ul>
+
+    <div class="add-form">
+      <input type="text" id="assigneeInput" class="text-input" placeholder="担当者名を入力..." maxlength="30" />
+      <button class="btn btn-secondary" id="addAssigneeBtn">&#43; 担当者を追加</button>
     </div>
+  </section>
 
-    <div class="empty-state" id="empty-state">
-      <p>タスクがありません</p>
-      <p class="empty-hint">上のフォームからタスクを追加してください</p>
+  <!-- ===== 予定削除確認モーダル ===== -->
+  <div class="modal-overlay hidden" id="deleteModal">
+    <div class="modal">
+      <p class="modal-msg" id="modalMsg"></p>
+      <div class="modal-btns">
+        <button class="btn btn-danger" id="modalDeleteOne">この1件だけ削除</button>
+        <button class="btn btn-danger" id="modalDeleteAll">繰り返し全体を削除</button>
+        <button class="btn btn-cancel" id="modalCancel">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 担当者削除確認モーダル ===== -->
+  <div class="modal-overlay hidden" id="assigneeDeleteModal">
+    <div class="modal">
+      <p class="modal-msg" id="assigneeModalMsg"></p>
+      <div class="modal-btns">
+        <button class="btn btn-danger" id="assigneeModalConfirm">削除する</button>
+        <button class="btn btn-cancel" id="assigneeModalCancel">キャンセル</button>
+      </div>
     </div>
   </div>
 
