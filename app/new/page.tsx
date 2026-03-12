@@ -23,11 +23,46 @@ const initialForm: FormData = {
   photoUrl: "",
 };
 
+function compressImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const MAX = 1200;
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        if (width > height) {
+          height = Math.round((height * MAX) / width);
+          width = MAX;
+        } else {
+          width = Math.round((width * MAX) / height);
+          height = MAX;
+        }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", 0.7));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("画像の読み込みに失敗しました"));
+    };
+    img.src = objectUrl;
+  });
+}
+
 export default function NewPage() {
   const router = useRouter();
   const [form, setForm] = useState<FormData>(initialForm);
   const [preview, setPreview] = useState("");
   const [saving, setSaving] = useState(false);
+  const [compressing, setCompressing] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+  const [saveError, setSaveError] = useState("");
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -36,16 +71,20 @@ export default function NewPage() {
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: "" }));
   }
 
-  function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string;
+    setPhotoError("");
+    setCompressing(true);
+    try {
+      const dataUrl = await compressImage(file);
       setPreview(dataUrl);
       set("photoUrl", dataUrl);
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      setPhotoError("写真の読み込みに失敗しました。別の写真をお試しください。");
+    } finally {
+      setCompressing(false);
+    }
   }
 
   function validate(): boolean {
@@ -59,10 +98,12 @@ export default function NewPage() {
     e.preventDefault();
     if (!validate()) return;
     setSaving(true);
+    setSaveError("");
     try {
       const record = await createRecord(form);
       router.push(`/item/${record.id}`);
     } catch {
+      setSaveError("登録に失敗しました。もう一度お試しください。");
       setSaving(false);
     }
   }
@@ -88,10 +129,14 @@ export default function NewPage() {
         <section className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <h2 className="text-sm font-bold text-gray-500 mb-3">📷 写真</h2>
           <div
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => !compressing && fileInputRef.current?.click()}
             className="border-2 border-dashed border-gray-200 rounded-xl overflow-hidden cursor-pointer active:bg-gray-50 flex items-center justify-center min-h-40"
           >
-            {preview ? (
+            {compressing ? (
+              <div className="text-center py-8">
+                <p className="text-gray-400 text-sm">圧縮中...</p>
+              </div>
+            ) : preview ? (
               <Image
                 src={preview}
                 alt="プレビュー"
@@ -114,10 +159,11 @@ export default function NewPage() {
             onChange={handlePhoto}
             className="hidden"
           />
-          {preview && (
+          {photoError && <p className="mt-2 text-xs text-red-500">{photoError}</p>}
+          {preview && !compressing && (
             <button
               type="button"
-              onClick={() => { setPreview(""); set("photoUrl", ""); }}
+              onClick={() => { setPreview(""); set("photoUrl", ""); setPhotoError(""); }}
               className="mt-2 text-xs text-red-500 underline"
             >
               写真を削除
@@ -188,12 +234,15 @@ export default function NewPage() {
 
       {/* 登録ボタン（固定） */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-50 to-transparent">
+        {saveError && (
+          <p className="text-center text-sm text-red-500 mb-2">{saveError}</p>
+        )}
         <button
           onClick={handleSubmit}
-          disabled={saving}
+          disabled={saving || compressing}
           className="w-full bg-blue-600 active:bg-blue-800 disabled:bg-gray-300 text-white font-bold py-4 rounded-2xl text-lg shadow-lg"
         >
-          {saving ? "登録中..." : "✓ 登録する"}
+          {saving ? "保存中..." : "✓ 登録する"}
         </button>
       </div>
     </div>
