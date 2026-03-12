@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>作業チェックリスト</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h1 .icon { font-size: 1.8rem; }
+
+    /* Input area */
+    .add-form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .add-form input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fff;
+    }
+
+    .add-form input:focus { border-color: #667eea; }
+
+    .add-form button {
+      padding: 12px 20px;
+      background: #667eea;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    .add-form button:hover { background: #5a67d8; }
+    .add-form button:active { transform: scale(0.97); }
+
+    /* Filter tabs */
+    .filters {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .filters button {
+      padding: 6px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 20px;
+      background: #fff;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: #4a5568;
+    }
+
+    .filters button.active {
+      background: #667eea;
+      border-color: #667eea;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Stats bar */
+    .stats {
+      font-size: 0.85rem;
+      color: #718096;
+      margin-bottom: 14px;
+    }
+
+    /* Task list */
+    .task-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px 16px;
+      animation: slideIn 0.2s ease;
+      transition: box-shadow 0.2s, opacity 0.2s;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .task-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+    .task-item.done { opacity: 0.55; }
+
+    /* Custom checkbox */
+    .checkbox {
+      width: 22px;
+      height: 22px;
+      border: 2px solid #cbd5e0;
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .checkbox.checked {
+      background: #48bb78;
+      border-color: #48bb78;
+    }
+
+    .checkbox.checked::after {
+      content: '';
+      width: 6px;
+      height: 10px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) translateY(-1px);
+    }
+
+    .task-text {
+      flex: 1;
+      font-size: 1rem;
+      color: #2d3748;
+      word-break: break-word;
+      transition: color 0.15s;
+    }
+
+    .task-item.done .task-text {
+      text-decoration: line-through;
+      color: #a0aec0;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #cbd5e0;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 4px;
+      border-radius: 6px;
+      line-height: 1;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .delete-btn:hover { color: #fc8181; background: #fff5f5; }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      color: #a0aec0;
+      padding: 48px 0;
+      font-size: 0.95rem;
+    }
+
+    .empty .empty-icon { font-size: 3rem; display: block; margin-bottom: 10px; }
+
+    /* Clear done button */
+    .clear-done {
+      margin-top: 18px;
+      text-align: right;
+    }
+
+    .clear-done button {
+      background: none;
+      border: none;
+      color: #a0aec0;
+      cursor: pointer;
+      font-size: 0.85rem;
+      text-decoration: underline;
+    }
+
+    .clear-done button:hover { color: #fc8181; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><span class="icon">✅</span>作業チェックリスト</h1>
+
+    <form class="add-form" id="addForm">
+      <input type="text" id="taskInput" placeholder="新しいタスクを入力..." autocomplete="off" />
+      <button type="submit">追加</button>
+    </form>
+
+    <div class="filters">
+      <button class="active" data-filter="all">すべて</button>
+      <button data-filter="active">未完了</button>
+      <button data-filter="done">完了済み</button>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <ul class="task-list" id="taskList"></ul>
+
+    <div class="clear-done" id="clearDoneArea" style="display:none">
+      <button id="clearDoneBtn">完了済みを削除</button>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'checklist-tasks';
+    let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let filter = 'all';
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    function render() {
+      const list = document.getElementById('taskList');
+      const stats = document.getElementById('stats');
+      const clearDoneArea = document.getElementById('clearDoneArea');
+
+      const filtered = tasks.filter(t => {
+        if (filter === 'active') return !t.done;
+        if (filter === 'done') return t.done;
+        return true;
+      });
+
+      const total = tasks.length;
+      const doneCount = tasks.filter(t => t.done).length;
+      stats.textContent = total > 0
+        ? `${doneCount} / ${total} 件完了`
+        : '';
+
+      clearDoneArea.style.display = doneCount > 0 ? 'block' : 'none';
+
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <li class="empty">
+            <span class="empty-icon">${filter === 'done' ? '🎯' : '📋'}</span>
+            ${filter === 'done' ? '完了済みのタスクはありません' : 'タスクがありません。追加してみましょう！'}
+          </li>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(t => `
+        <li class="task-item ${t.done ? 'done' : ''}" data-id="${t.id}">
+          <div class="checkbox ${t.done ? 'checked' : ''}" data-action="toggle" data-id="${t.id}"></div>
+          <span class="task-text">${escapeHtml(t.text)}</span>
+          <button class="delete-btn" data-action="delete" data-id="${t.id}" title="削除">✕</button>
+        </li>
+      `).join('');
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    // Add task
+    document.getElementById('addForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const input = document.getElementById('taskInput');
+      const text = input.value.trim();
+      if (!text) return;
+      tasks.unshift({ id: Date.now(), text, done: false });
+      input.value = '';
+      save();
+      render();
+    });
+
+    // Toggle / Delete via event delegation
+    document.getElementById('taskList').addEventListener('click', e => {
+      const action = e.target.dataset.action;
+      const id = Number(e.target.dataset.id);
+      if (!action || !id) return;
+
+      if (action === 'toggle') {
+        const t = tasks.find(t => t.id === id);
+        if (t) { t.done = !t.done; save(); render(); }
+      } else if (action === 'delete') {
+        tasks = tasks.filter(t => t.id !== id);
+        save();
+        render();
+      }
+    });
+
+    // Filter buttons
+    document.querySelector('.filters').addEventListener('click', e => {
+      if (!e.target.dataset.filter) return;
+      filter = e.target.dataset.filter;
+      document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      render();
+    });
+
+    // Clear done
+    document.getElementById('clearDoneBtn').addEventListener('click', () => {
+      tasks = tasks.filter(t => !t.done);
+      save();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
