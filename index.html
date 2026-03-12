@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>作業チェックリスト</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📋 作業チェックリスト</h1>
+      <div class="stats">
+        <span id="stats-text">0 / 0 完了</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="input-area">
+      <input
+        type="text"
+        id="task-input"
+        placeholder="新しいタスクを入力..."
+        maxlength="100"
+      >
+      <button id="add-btn" onclick="addTask()">追加</button>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" onclick="setFilter('all', this)">すべて</button>
+      <button class="filter-btn" onclick="setFilter('active', this)">未完了</button>
+      <button class="filter-btn" onclick="setFilter('completed', this)">完了済み</button>
+    </div>
+
+    <ul id="task-list"></ul>
+
+    <div class="footer" id="footer">
+      <span id="remaining-count"></span>
+      <button class="clear-btn" onclick="clearCompleted()">完了済みを削除</button>
+    </div>
+
+    <div class="empty-state" id="empty-state">
+      <p>タスクがありません</p>
+      <p class="empty-hint">上のフォームからタスクを追加してください</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
