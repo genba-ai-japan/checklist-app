@@ -31,7 +31,7 @@ export default function HomeScreen({ onAddPress }: Props) {
       {/* ヘッダー */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">カネミル</h1>
+          <h1 className="text-2xl font-bold text-gray-900">マネミル</h1>
           <p className="text-sm text-gray-400">{monthLabel}の収支</p>
         </div>
         <button

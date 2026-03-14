@@ -1,6 +1,6 @@
 {
-  "name": "カネミル - 家計簿・資産管理",
-  "short_name": "カネミル",
+  "name": "マネミル - 家計簿・資産管理",
+  "short_name": "マネミル",
   "description": "毎日の支出をサッと記録。純資産の成長を実感できる家計簿アプリ",
   "start_url": "/",
   "display": "standalone",

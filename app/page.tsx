@@ -6,6 +6,7 @@ import AssetsScreen from "@/components/screens/AssetsScreen";
 import CalendarScreen from "@/components/screens/CalendarScreen";
 import AnalyticsScreen from "@/components/screens/AnalyticsScreen";
 import SettingsScreen from "@/components/screens/SettingsScreen";
+import GuideScreen from "@/components/screens/GuideScreen";
 import BottomNav from "@/components/layout/BottomNav";
 import TransactionForm from "@/components/forms/TransactionForm";
 import { isInitialized } from "@/lib/storage";
@@ -16,6 +17,7 @@ export type TabName = "home" | "assets" | "calendar" | "analytics" | "settings";
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabName>("home");
   const [showForm, setShowForm] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function App() {
         )}
         {activeTab === "analytics" && <AnalyticsScreen key={refreshKey} />}
         {activeTab === "settings" && (
-          <SettingsScreen key={refreshKey} onDataChange={() => setRefreshKey(k => k + 1)} />
+          <SettingsScreen key={refreshKey} onDataChange={() => setRefreshKey(k => k + 1)} onShowGuide={() => setShowGuide(true)} />
         )}
       </div>
 
@@ -53,6 +55,9 @@ export default function App() {
       {showForm && (
         <TransactionForm onClose={() => setShowForm(false)} onSaved={onSaved} />
       )}
+
+      {/* 使い方ガイド */}
+      {showGuide && <GuideScreen onClose={() => setShowGuide(false)} />}
     </div>
   );
 }

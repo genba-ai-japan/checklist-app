@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "カネミル",
+  title: "マネミル",
   description: "毎日の支出をサッと記録。自分の総資産がひと目でわかる家計簿アプリ",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "カネミル",
+    title: "マネミル",
   },
 };
 
