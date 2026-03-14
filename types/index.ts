@@ -1,10 +1,40 @@
-export interface MachineRecord {
+export type TransactionType = 'income' | 'expense';
+
+export type AccountType = 'cash' | 'bank' | 'card' | 'emoney' | 'investment' | 'debt';
+
+export interface Category {
   id: string;
-  productName: string;    // 製品名
-  contentVolume: string;  // 内容量
-  packType: string;       // パック形態
-  machineNumber: string;  // 機械番号
-  settingsMemo: string;   // 設定値メモ
-  photoUrl: string;       // 写真（Base64）
-  registeredAt: string;   // 登録日時（ISO string）
+  name: string;
+  type: TransactionType;
+  icon: string;
+  sortOrder: number;
+}
+
+export interface Account {
+  id: string;
+  name: string;
+  type: AccountType;
+  balance: number;
+  color: string;
+  sortOrder: number;
+}
+
+export interface Transaction {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  categoryId: string;
+  accountId: string;
+  date: string; // YYYY-MM-DD
+  memo: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AssetSnapshot {
+  id: string;
+  month: string; // YYYY-MM
+  totalAssets: number;
+  totalLiabilities: number;
+  netWorth: number;
 }
