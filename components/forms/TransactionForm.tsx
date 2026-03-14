@@ -61,6 +61,14 @@ export default function TransactionForm({ onClose, onSaved, defaultDate }: Props
       <div className="relative bg-white rounded-t-3xl px-4 pb-8 pt-4 shadow-xl">
         {/* ハンドル */}
         <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
+        {/* 閉じるボタン */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors text-lg leading-none"
+          aria-label="閉じる"
+        >
+          ×
+        </button>
 
         {/* 収入/支出切り替え */}
         <div className="flex bg-gray-100 rounded-xl p-1 mb-5">
