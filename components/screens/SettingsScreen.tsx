@@ -47,6 +47,27 @@ export default function SettingsScreen({ onDataChange, onShowGuide }: Props) {
       {tab === "account" && <AccountSettings onDataChange={onDataChange} />}
       {tab === "category" && <CategorySettings onDataChange={onDataChange} />}
       {tab === "data" && <DataSettings onDataChange={onDataChange} />}
+
+      {/* 使い方ガイド */}
+      <button
+        onClick={onShowGuide}
+        className="w-full flex items-center justify-between bg-white rounded-2xl px-4 py-4 shadow-sm active:bg-gray-50"
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-xl">📖</span>
+          <div className="text-left">
+            <p className="text-sm font-medium text-gray-800">使い方ガイド</p>
+            <p className="text-xs text-gray-400">マネミルの基本的な使い方を確認する</p>
+          </div>
+        </div>
+        <span className="text-gray-300">›</span>
+      </button>
+
+      <div className="bg-gray-100 rounded-2xl p-4">
+        <p className="text-xs text-gray-500 font-semibold mb-1">マネミル について</p>
+        <p className="text-xs text-gray-400">毎日の支出をサッと記録。純資産の成長を実感できる家計簿アプリ。</p>
+        <p className="text-xs text-gray-300 mt-1">データはすべて端末内に保存されます。</p>
+      </div>
     </div>
   );
 }
@@ -306,27 +327,6 @@ function DataSettings({ onDataChange }: { onDataChange: () => void }) {
           </div>
           <span className="text-gray-300">›</span>
         </button>
-      </div>
-
-      {/* 使い方ガイド */}
-      <button
-        onClick={onShowGuide}
-        className="w-full flex items-center justify-between bg-white rounded-2xl px-4 py-4 shadow-sm active:bg-gray-50"
-      >
-        <div className="flex items-center gap-3">
-          <span className="text-xl">📖</span>
-          <div className="text-left">
-            <p className="text-sm font-medium text-gray-800">使い方ガイド</p>
-            <p className="text-xs text-gray-400">マネミルの基本的な使い方を確認する</p>
-          </div>
-        </div>
-        <span className="text-gray-300">›</span>
-      </button>
-
-      <div className="bg-gray-100 rounded-2xl p-4">
-        <p className="text-xs text-gray-500 font-semibold mb-1">マネミル について</p>
-        <p className="text-xs text-gray-400">毎日の支出をサッと記録。純資産の成長を実感できる家計簿アプリ。</p>
-        <p className="text-xs text-gray-300 mt-1">データはすべて端末内に保存されます。</p>
       </div>
     </div>
   );
