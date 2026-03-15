@@ -101,6 +101,68 @@ export default function GuideScreen({ onClose }: Props) {
           </div>
         </section>
 
+        {/* 投資・貯金への振替 */}
+        <section>
+          <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">投資・貯金への振替の記録</h2>
+          <div className="rounded-2xl border border-yellow-100 bg-yellow-50 p-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🏦</span>
+              <p className="text-sm font-bold text-gray-800">給与 → 投資・貯金口座へ移す場合</p>
+            </div>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              このアプリに口座間の直接振替機能はありませんが、以下の手順で正確に記録できます。
+            </p>
+
+            {/* 推奨方法 */}
+            <div className="bg-white rounded-xl p-3 space-y-2">
+              <p className="text-xs font-bold text-yellow-700">推奨：支出として記録する</p>
+              {[
+                "「＋」ボタンで新規記録を開く",
+                "種別：「支出」を選択",
+                "カテゴリ：「投資」または「貯金」を選択",
+                "口座：移動元（給与が入る銀行口座など）を選択",
+                "設定 → 口座 で移動先の口座残高を手動で更新",
+              ].map((step, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-yellow-400 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                    {i + 1}
+                  </span>
+                  <p className="text-xs text-gray-600 leading-relaxed">{step}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* 補足 */}
+            <div className="bg-white rounded-xl p-3 space-y-2">
+              <p className="text-xs font-bold text-gray-700">2件に分けて記録する方法</p>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                移動元と移動先の両口座を自動更新したい場合は、以下の2件を記録します。
+              </p>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2 bg-red-50 rounded-lg px-3 py-2">
+                  <span className="text-red-500 text-xs font-bold w-10 flex-shrink-0">支出</span>
+                  <p className="text-xs text-gray-600">カテゴリ「振替」・口座：移動元</p>
+                </div>
+                <div className="flex items-center gap-2 bg-green-50 rounded-lg px-3 py-2">
+                  <span className="text-green-600 text-xs font-bold w-10 flex-shrink-0">収入</span>
+                  <p className="text-xs text-gray-600">カテゴリ「振替受入」・口座：移動先</p>
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 leading-relaxed">
+                ※ この方法は収入・支出の集計に振替分が加算されるため、月次サマリーが実際より大きく見えます。
+              </p>
+            </div>
+
+            {/* おすすめ設定 */}
+            <div className="flex items-start gap-2 bg-blue-50 rounded-xl px-3 py-2.5">
+              <span className="text-base flex-shrink-0">💡</span>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                設定 → カテゴリ に「投資」「貯金」「積立NISA」「iDeCo」などを追加しておくと、用途ごとに分類できます。
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* タブ別ガイド */}
         <section>
           <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">各タブの説明</h2>
