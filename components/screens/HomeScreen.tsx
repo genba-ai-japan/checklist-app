@@ -9,9 +9,10 @@ import SwipeableRow from "@/components/ui/SwipeableRow";
 interface Props {
   onAddPress: () => void;
   onDataChange?: () => void;
+  onViewAll?: () => void;
 }
 
-export default function HomeScreen({ onAddPress, onDataChange }: Props) {
+export default function HomeScreen({ onAddPress, onDataChange, onViewAll }: Props) {
   const [transactions, setTransactions] = useState(() => getTransactions());
   const accounts = getAccounts();
   const categories = getCategories();
@@ -91,7 +92,9 @@ export default function HomeScreen({ onAddPress, onDataChange }: Props) {
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-50 flex items-center justify-between">
           <p className="font-semibold text-gray-800">最近の記録</p>
-          <span className="text-xs text-gray-400">{recent.length}件</span>
+          <button onClick={onViewAll} className="text-xs text-blue-600 font-medium">
+            全て見る →
+          </button>
         </div>
         {recent.length === 0 ? (
           <div className="py-10 text-center text-gray-400">

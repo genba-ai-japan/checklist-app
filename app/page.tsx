@@ -7,6 +7,7 @@ import CalendarScreen from "@/components/screens/CalendarScreen";
 import AnalyticsScreen from "@/components/screens/AnalyticsScreen";
 import SettingsScreen from "@/components/screens/SettingsScreen";
 import GuideScreen from "@/components/screens/GuideScreen";
+import RecordsScreen from "@/components/screens/RecordsScreen";
 import BottomNav from "@/components/layout/BottomNav";
 import TransactionForm from "@/components/forms/TransactionForm";
 import { isInitialized } from "@/lib/storage";
@@ -18,6 +19,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabName>("home");
   const [showForm, setShowForm] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [showRecords, setShowRecords] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -36,7 +38,7 @@ export default function App() {
       {/* メインコンテンツ */}
       <div className="flex-1 overflow-y-auto" style={{ paddingBottom: "calc(64px + env(safe-area-inset-bottom, 0px))" }}>
         {activeTab === "home" && (
-          <HomeScreen key={refreshKey} onAddPress={() => setShowForm(true)} onDataChange={() => setRefreshKey(k => k + 1)} />
+          <HomeScreen key={refreshKey} onAddPress={() => setShowForm(true)} onDataChange={() => setRefreshKey(k => k + 1)} onViewAll={() => setShowRecords(true)} />
         )}
         {activeTab === "assets" && <AssetsScreen key={refreshKey} />}
         {activeTab === "calendar" && (
@@ -58,6 +60,15 @@ export default function App() {
 
       {/* 使い方ガイド */}
       {showGuide && <GuideScreen onClose={() => setShowGuide(false)} />}
+
+      {/* 記録一覧 */}
+      {showRecords && (
+        <RecordsScreen
+          onBack={() => setShowRecords(false)}
+          onAddPress={() => { setShowRecords(false); setShowForm(true); }}
+          onDataChange={() => setRefreshKey(k => k + 1)}
+        />
+      )}
     </div>
   );
 }
