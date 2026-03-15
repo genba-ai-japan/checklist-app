@@ -6,6 +6,7 @@ import {
   getAccounts, saveAccounts,
   getTransactions,
   isInitialized,
+  getMonthlyBudget, setMonthlyBudget,
 } from "@/lib/storage";
 import { initSampleData } from "@/lib/sampleData";
 import { formatCurrency, generateId, ACCOUNT_TYPE_LABELS } from "@/lib/utils";
@@ -16,7 +17,7 @@ interface Props {
   onShowGuide: () => void;
 }
 
-type SettingTab = "category" | "account" | "data";
+type SettingTab = "account" | "category" | "budget" | "data";
 
 export default function SettingsScreen({ onDataChange, onShowGuide }: Props) {
   const [tab, setTab] = useState<SettingTab>("account");
@@ -30,12 +31,13 @@ export default function SettingsScreen({ onDataChange, onShowGuide }: Props) {
         {[
           { id: "account" as const, label: "口座" },
           { id: "category" as const, label: "カテゴリ" },
+          { id: "budget" as const, label: "予算" },
           { id: "data" as const, label: "データ" },
         ].map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+            className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               tab === t.id ? "bg-white shadow text-blue-600" : "text-gray-400"
             }`}
           >
@@ -46,6 +48,7 @@ export default function SettingsScreen({ onDataChange, onShowGuide }: Props) {
 
       {tab === "account" && <AccountSettings onDataChange={onDataChange} />}
       {tab === "category" && <CategorySettings onDataChange={onDataChange} />}
+      {tab === "budget" && <BudgetSettings onDataChange={onDataChange} />}
       {tab === "data" && <DataSettings onDataChange={onDataChange} />}
 
       {/* 使い方ガイド */}
@@ -254,6 +257,83 @@ function CategorySettings({ onDataChange }: { onDataChange: () => void }) {
           ))
         )}
       </div>
+    </div>
+  );
+}
+
+// ----------- 予算設定 -----------
+function BudgetSettings({ onDataChange }: { onDataChange: () => void }) {
+  const current = getMonthlyBudget();
+  const [input, setInput] = useState(current > 0 ? current.toLocaleString('ja-JP') : "");
+  const [saved, setSaved] = useState(false);
+
+  function fmtInput(val: string) {
+    const clean = val.replace(/[^0-9]/g, "");
+    if (!clean) return "";
+    return clean.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  function handleSave() {
+    const amt = parseInt(input.replace(/,/g, ""), 10) || 0;
+    setMonthlyBudget(amt);
+    onDataChange();
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  function handleClear() {
+    setMonthlyBudget(0);
+    setInput("");
+    onDataChange();
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-white rounded-2xl shadow-sm p-4 space-y-4">
+        <div>
+          <p className="text-sm font-semibold text-gray-800 mb-1">月間支出予算</p>
+          <p className="text-xs text-gray-400">設定した金額がホーム画面に進捗バーで表示されます</p>
+        </div>
+
+        <div className="flex items-center border-b-2 border-blue-500 pb-1">
+          <span className="text-xl text-gray-400 mr-2">¥</span>
+          <input
+            type="tel"
+            inputMode="numeric"
+            value={input}
+            onChange={e => setInput(fmtInput(e.target.value))}
+            placeholder="例：100,000"
+            className="flex-1 text-2xl font-bold text-gray-900 outline-none bg-transparent"
+          />
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={handleSave}
+            className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-semibold active:bg-blue-700"
+          >
+            {saved ? "✓ 保存しました" : "保存する"}
+          </button>
+          {current > 0 && (
+            <button
+              onClick={handleClear}
+              className="px-4 py-3 bg-gray-100 text-gray-500 rounded-xl text-sm font-semibold"
+            >
+              削除
+            </button>
+          )}
+        </div>
+      </div>
+
+      {current > 0 && (
+        <div className="bg-blue-50 rounded-2xl p-4">
+          <p className="text-xs text-blue-600 font-semibold mb-1">現在の設定</p>
+          <p className="text-lg font-bold text-blue-800">
+            毎月 {formatCurrency(current)} の予算
+          </p>
+          <p className="text-xs text-blue-500 mt-1">ホーム画面で予算達成状況を確認できます</p>
+        </div>
+      )}
     </div>
   );
 }

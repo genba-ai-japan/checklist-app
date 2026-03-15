@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { getTransactions, getAccounts, getCategories, deleteTransaction } from "@/lib/storage";
+import { getTransactions, getAccounts, getCategories, deleteTransaction, getMonthlyBudget } from "@/lib/storage";
 import { formatCurrency, getCurrentMonth, calcMonthSummary, calcAssetTotals } from "@/lib/utils";
 import { Transaction } from "@/types";
 import SwipeableRow from "@/components/ui/SwipeableRow";
@@ -20,6 +20,7 @@ export default function HomeScreen({ onAddPress, onDataChange, onViewAll }: Prop
 
   const summary = useMemo(() => calcMonthSummary(transactions, currentMonth), [transactions, currentMonth]);
   const assetTotals = useMemo(() => calcAssetTotals(accounts), [accounts]);
+  const monthlyBudget = getMonthlyBudget();
 
   const recent = useMemo(
     () => [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5),
@@ -72,6 +73,11 @@ export default function HomeScreen({ onAddPress, onDataChange, onViewAll }: Prop
         </div>
       </div>
 
+      {/* 予算カード */}
+      {monthlyBudget > 0 && (
+        <BudgetCard budget={monthlyBudget} expense={summary.expense} />
+      )}
+
       {/* 純資産カード */}
       <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-4 shadow-md text-white">
         <p className="text-sm text-blue-100 mb-1">純資産</p>
@@ -116,6 +122,34 @@ export default function HomeScreen({ onAddPress, onDataChange, onViewAll }: Prop
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function BudgetCard({ budget, expense }: { budget: number; expense: number }) {
+  const pct = Math.min((expense / budget) * 100, 100);
+  const remaining = budget - expense;
+  const over = expense > budget;
+
+  return (
+    <div className="bg-white rounded-2xl p-4 shadow-sm">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-sm text-gray-500">今月の予算</p>
+        <p className={`text-xs font-semibold ${over ? "text-red-500" : "text-gray-400"}`}>
+          {over ? `¥${(expense - budget).toLocaleString('ja-JP')} オーバー` : `残り ¥${remaining.toLocaleString('ja-JP')}`}
+        </p>
+      </div>
+      {/* プログレスバー */}
+      <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-2">
+        <div
+          className={`h-full rounded-full transition-all ${over ? "bg-red-500" : pct >= 80 ? "bg-orange-400" : "bg-blue-500"}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <div className="flex justify-between text-xs text-gray-400">
+        <span>支出 {formatCurrency(expense)}</span>
+        <span>予算 {formatCurrency(budget)}</span>
       </div>
     </div>
   );

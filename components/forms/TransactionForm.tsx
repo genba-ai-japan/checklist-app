@@ -22,7 +22,8 @@ function parseAmt(val: string) {
 }
 function fmtAmt(val: string) {
   const clean = val.replace(/[^0-9]/g, "");
-  return clean ? Number(clean).toLocaleString() : "";
+  if (!clean) return "";
+  return clean.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 export default function TransactionForm({ onClose, onSaved, defaultDate }: Props) {

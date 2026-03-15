@@ -73,6 +73,17 @@ export function upsertSnapshot(snap: AssetSnapshot): void {
   saveSnapshots(all);
 }
 
+// Monthly Budget
+export function getMonthlyBudget(): number {
+  if (typeof window === 'undefined') return 0;
+  const raw = localStorage.getItem('kanemiru_monthly_budget');
+  return raw ? Number(raw) : 0;
+}
+export function setMonthlyBudget(amount: number): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('kanemiru_monthly_budget', String(amount));
+}
+
 // Init check
 export function isInitialized(): boolean {
   if (typeof window === 'undefined') return false;
