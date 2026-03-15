@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
-import { getTransactions, getAccounts, getCategories } from "@/lib/storage";
-import { formatCurrency, getCurrentMonth, calcMonthSummary, calcAssetTotals, formatDate } from "@/lib/utils";
+import { useState, useMemo } from "react";
+import { getTransactions, getAccounts, getCategories, deleteTransaction } from "@/lib/storage";
+import { formatCurrency, getCurrentMonth, calcMonthSummary, calcAssetTotals } from "@/lib/utils";
 import { Transaction } from "@/types";
+import SwipeableRow from "@/components/ui/SwipeableRow";
 
 interface Props {
   onAddPress: () => void;
+  onDataChange?: () => void;
 }
 
-export default function HomeScreen({ onAddPress }: Props) {
-  const transactions = getTransactions();
+export default function HomeScreen({ onAddPress, onDataChange }: Props) {
+  const [transactions, setTransactions] = useState(() => getTransactions());
   const accounts = getAccounts();
   const categories = getCategories();
   const currentMonth = getCurrentMonth();
@@ -25,6 +27,12 @@ export default function HomeScreen({ onAddPress }: Props) {
 
   const now = new Date();
   const monthLabel = `${now.getFullYear()}年${now.getMonth() + 1}月`;
+
+  function handleDelete(id: string) {
+    deleteTransaction(id);
+    setTransactions(prev => prev.filter(t => t.id !== id));
+    onDataChange?.();
+  }
 
   return (
     <div className="px-4 pt-4 pb-4 space-y-4">
@@ -99,7 +107,9 @@ export default function HomeScreen({ onAddPress }: Props) {
         ) : (
           <div className="divide-y divide-gray-50">
             {recent.map((t) => (
-              <TransactionRow key={t.id} transaction={t} categories={categories} accounts={accounts} />
+              <SwipeableRow key={t.id} onDelete={() => handleDelete(t.id)}>
+                <TransactionRow transaction={t} categories={categories} accounts={accounts} />
+              </SwipeableRow>
             ))}
           </div>
         )}

@@ -1,21 +1,22 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { getTransactions, getCategories } from "@/lib/storage";
+import { getTransactions, getCategories, deleteTransaction } from "@/lib/storage";
 import { formatCurrency, filterByMonth } from "@/lib/utils";
-import { Transaction } from "@/types";
+import SwipeableRow from "@/components/ui/SwipeableRow";
 
 interface Props {
   onAddPress: () => void;
+  onDataChange?: () => void;
 }
 
-export default function CalendarScreen({ onAddPress }: Props) {
+export default function CalendarScreen({ onAddPress, onDataChange }: Props) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  const transactions = getTransactions();
+  const [transactions, setTransactions] = useState(() => getTransactions());
   const categories = getCategories();
 
   const monthStr = `${year}-${String(month).padStart(2, "0")}`;
@@ -34,7 +35,7 @@ export default function CalendarScreen({ onAddPress }: Props) {
   }, [monthly]);
 
   // カレンダー生成
-  const firstDay = new Date(year, month - 1, 1).getDay(); // 0=Sun
+  const firstDay = new Date(year, month - 1, 1).getDay();
   const daysInMonth = new Date(year, month, 0).getDate();
   const calDays: (number | null)[] = [
     ...Array(firstDay).fill(null),
@@ -55,6 +56,12 @@ export default function CalendarScreen({ onAddPress }: Props) {
   const selectedTransactions = selectedDate
     ? transactions.filter(t => t.date === selectedDate)
     : [];
+
+  function handleDelete(id: string) {
+    deleteTransaction(id);
+    setTransactions(prev => prev.filter(t => t.id !== id));
+    onDataChange?.();
+  }
 
   return (
     <div className="px-4 pt-4 pb-4 space-y-4">
@@ -156,16 +163,18 @@ export default function CalendarScreen({ onAddPress }: Props) {
               {selectedTransactions.map(t => {
                 const cat = categories.find(c => c.id === t.categoryId);
                 return (
-                  <div key={t.id} className="flex items-center px-4 py-3 gap-3">
-                    <span className="text-2xl">{cat?.icon ?? "📦"}</span>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-800">{cat?.name ?? "その他"}</p>
-                      {t.memo && <p className="text-xs text-gray-400">{t.memo}</p>}
+                  <SwipeableRow key={t.id} onDelete={() => handleDelete(t.id)}>
+                    <div className="flex items-center px-4 py-3 gap-3">
+                      <span className="text-2xl">{cat?.icon ?? "📦"}</span>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-800">{cat?.name ?? "その他"}</p>
+                        {t.memo && <p className="text-xs text-gray-400">{t.memo}</p>}
+                      </div>
+                      <p className={`font-bold text-sm ${t.type === "income" ? "text-green-600" : "text-red-500"}`}>
+                        {t.type === "income" ? "+" : "−"}{formatCurrency(t.amount)}
+                      </p>
                     </div>
-                    <p className={`font-bold text-sm ${t.type === "income" ? "text-green-600" : "text-red-500"}`}>
-                      {t.type === "income" ? "+" : "−"}{formatCurrency(t.amount)}
-                    </p>
-                  </div>
+                  </SwipeableRow>
                 );
               })}
             </div>

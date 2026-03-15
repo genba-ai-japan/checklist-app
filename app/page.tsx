@@ -36,11 +36,11 @@ export default function App() {
       {/* メインコンテンツ */}
       <div className="flex-1 overflow-y-auto" style={{ paddingBottom: "calc(64px + env(safe-area-inset-bottom, 0px))" }}>
         {activeTab === "home" && (
-          <HomeScreen key={refreshKey} onAddPress={() => setShowForm(true)} />
+          <HomeScreen key={refreshKey} onAddPress={() => setShowForm(true)} onDataChange={() => setRefreshKey(k => k + 1)} />
         )}
         {activeTab === "assets" && <AssetsScreen key={refreshKey} />}
         {activeTab === "calendar" && (
-          <CalendarScreen key={refreshKey} onAddPress={() => setShowForm(true)} />
+          <CalendarScreen key={refreshKey} onAddPress={() => setShowForm(true)} onDataChange={() => setRefreshKey(k => k + 1)} />
         )}
         {activeTab === "analytics" && <AnalyticsScreen key={refreshKey} />}
         {activeTab === "settings" && (
