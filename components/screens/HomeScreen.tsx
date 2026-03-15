@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { getTransactions, getAccounts, getCategories, deleteTransaction, getMonthlyBudget } from "@/lib/storage";
+import { getTransactions, getAccounts, getCategories, deleteTransaction, getMonthlyBudget, getCategoryBudgets } from "@/lib/storage";
 import { formatCurrency, getCurrentMonth, calcMonthSummary, calcAssetTotals } from "@/lib/utils";
-import { Transaction } from "@/types";
+import { Transaction, CategoryBudget } from "@/types";
 import SwipeableRow from "@/components/ui/SwipeableRow";
 
 interface Props {
@@ -21,6 +21,7 @@ export default function HomeScreen({ onAddPress, onDataChange, onViewAll }: Prop
   const summary = useMemo(() => calcMonthSummary(transactions, currentMonth), [transactions, currentMonth]);
   const assetTotals = useMemo(() => calcAssetTotals(accounts), [accounts]);
   const monthlyBudget = getMonthlyBudget();
+  const categoryBudgets = getCategoryBudgets();
 
   const recent = useMemo(
     () => [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5),
@@ -74,8 +75,14 @@ export default function HomeScreen({ onAddPress, onDataChange, onViewAll }: Prop
       </div>
 
       {/* 予算カード */}
-      {monthlyBudget > 0 && (
-        <BudgetCard budget={monthlyBudget} expense={summary.expense} />
+      {(monthlyBudget > 0 || categoryBudgets.length > 0) && (
+        <BudgetCard
+          budget={monthlyBudget}
+          expense={summary.expense}
+          categoryBudgets={categoryBudgets}
+          categories={categories}
+          transactions={transactions.filter(t => t.date.startsWith(currentMonth) && t.type === "expense")}
+        />
       )}
 
       {/* 純資産カード */}
@@ -127,30 +134,94 @@ export default function HomeScreen({ onAddPress, onDataChange, onViewAll }: Prop
   );
 }
 
-function BudgetCard({ budget, expense }: { budget: number; expense: number }) {
-  const pct = Math.min((expense / budget) * 100, 100);
-  const remaining = budget - expense;
-  const over = expense > budget;
+function MiniBar({ pct, over }: { pct: number; over: boolean }) {
+  return (
+    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden flex-1">
+      <div
+        className={`h-full rounded-full ${over ? "bg-red-500" : pct >= 80 ? "bg-orange-400" : "bg-blue-500"}`}
+        style={{ width: `${Math.min(pct, 100)}%` }}
+      />
+    </div>
+  );
+}
+
+function BudgetCard({
+  budget, expense, categoryBudgets, categories, transactions,
+}: {
+  budget: number;
+  expense: number;
+  categoryBudgets: CategoryBudget[];
+  categories: ReturnType<typeof getCategories>;
+  transactions: Transaction[];
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  const totalPct = budget > 0 ? Math.min((expense / budget) * 100, 100) : 0;
+  const totalOver = budget > 0 && expense > budget;
+
+  // カテゴリ別集計
+  const catRows = categoryBudgets
+    .map(cb => {
+      const cat = categories.find(c => c.id === cb.categoryId);
+      const spent = transactions.filter(t => t.categoryId === cb.categoryId).reduce((s, t) => s + t.amount, 0);
+      const pct = (spent / cb.amount) * 100;
+      return { cat, spent, budget: cb.amount, pct, over: spent > cb.amount };
+    })
+    .filter(r => r.cat);
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-sm text-gray-500">今月の予算</p>
-        <p className={`text-xs font-semibold ${over ? "text-red-500" : "text-gray-400"}`}>
-          {over ? `¥${(expense - budget).toLocaleString('ja-JP')} オーバー` : `残り ¥${remaining.toLocaleString('ja-JP')}`}
-        </p>
-      </div>
-      {/* プログレスバー */}
-      <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-2">
-        <div
-          className={`h-full rounded-full transition-all ${over ? "bg-red-500" : pct >= 80 ? "bg-orange-400" : "bg-blue-500"}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <div className="flex justify-between text-xs text-gray-400">
-        <span>支出 {formatCurrency(expense)}</span>
-        <span>予算 {formatCurrency(budget)}</span>
-      </div>
+    <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+      {/* 合計予算 */}
+      {budget > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-sm text-gray-500">今月の予算</p>
+            <p className={`text-xs font-semibold ${totalOver ? "text-red-500" : "text-gray-400"}`}>
+              {totalOver
+                ? `¥${(expense - budget).toLocaleString('ja-JP')} オーバー`
+                : `残り ¥${(budget - expense).toLocaleString('ja-JP')}`}
+            </p>
+          </div>
+          <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-1.5">
+            <div
+              className={`h-full rounded-full transition-all ${totalOver ? "bg-red-500" : totalPct >= 80 ? "bg-orange-400" : "bg-blue-500"}`}
+              style={{ width: `${totalPct}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-gray-400">
+            <span>支出 {formatCurrency(expense)}</span>
+            <span>予算 {formatCurrency(budget)}</span>
+          </div>
+        </div>
+      )}
+
+      {/* カテゴリ別内訳 */}
+      {catRows.length > 0 && (
+        <div>
+          <button
+            onClick={() => setExpanded(e => !e)}
+            className="flex items-center gap-1 text-xs text-blue-600 font-medium"
+          >
+            カテゴリ別 {expanded ? "▲" : "▼"}
+          </button>
+          {expanded && (
+            <div className="mt-2 space-y-2">
+              {catRows.map(({ cat, spent, budget: bgt, pct, over }) => (
+                <div key={cat!.id}>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-sm">{cat!.icon}</span>
+                    <p className="text-xs text-gray-600 flex-1 truncate">{cat!.name}</p>
+                    <p className={`text-xs font-semibold ${over ? "text-red-500" : "text-gray-500"}`}>
+                      {formatCurrency(spent)} / {formatCurrency(bgt)}
+                    </p>
+                  </div>
+                  <MiniBar pct={pct} over={over} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

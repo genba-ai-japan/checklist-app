@@ -38,3 +38,8 @@ export interface AssetSnapshot {
   totalLiabilities: number;
   netWorth: number;
 }
+
+export interface CategoryBudget {
+  categoryId: string;
+  amount: number;
+}

@@ -1,4 +1,4 @@
-import { Transaction, Category, Account, AssetSnapshot } from '@/types';
+import { Transaction, Category, Account, AssetSnapshot, CategoryBudget } from '@/types';
 
 const KEYS = {
   transactions: 'kanemiru_transactions',
@@ -71,6 +71,31 @@ export function upsertSnapshot(snap: AssetSnapshot): void {
   if (idx >= 0) all[idx] = snap;
   else all.push(snap);
   saveSnapshots(all);
+}
+
+// Category Budgets
+const CAT_BUDGET_KEY = 'kanemiru_category_budgets';
+export function getCategoryBudgets(): CategoryBudget[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(CAT_BUDGET_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+export function saveCategoryBudgets(data: CategoryBudget[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(CAT_BUDGET_KEY, JSON.stringify(data));
+}
+export function setCategoryBudget(categoryId: string, amount: number): void {
+  const all = getCategoryBudgets();
+  const idx = all.findIndex(b => b.categoryId === categoryId);
+  if (amount === 0) {
+    if (idx >= 0) { all.splice(idx, 1); saveCategoryBudgets(all); }
+    return;
+  }
+  if (idx >= 0) all[idx].amount = amount;
+  else all.push({ categoryId, amount });
+  saveCategoryBudgets(all);
 }
 
 // Monthly Budget

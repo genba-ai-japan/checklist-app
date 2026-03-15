@@ -7,6 +7,7 @@ import {
   getTransactions,
   isInitialized,
   getMonthlyBudget, setMonthlyBudget,
+  getCategoryBudgets, setCategoryBudget,
 } from "@/lib/storage";
 import { initSampleData } from "@/lib/sampleData";
 import { formatCurrency, generateId, ACCOUNT_TYPE_LABELS } from "@/lib/utils";
@@ -262,78 +263,109 @@ function CategorySettings({ onDataChange }: { onDataChange: () => void }) {
 }
 
 // ----------- 予算設定 -----------
+function fmtBudgetInput(val: string) {
+  const clean = val.replace(/[^0-9]/g, "");
+  if (!clean) return "";
+  return clean.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 function BudgetSettings({ onDataChange }: { onDataChange: () => void }) {
-  const current = getMonthlyBudget();
-  const [input, setInput] = useState(current > 0 ? current.toLocaleString('ja-JP') : "");
-  const [saved, setSaved] = useState(false);
+  const totalCurrent = getMonthlyBudget();
+  const [totalInput, setTotalInput] = useState(
+    totalCurrent > 0 ? totalCurrent.toLocaleString('ja-JP') : ""
+  );
+  const [totalSaved, setTotalSaved] = useState(false);
 
-  function fmtInput(val: string) {
-    const clean = val.replace(/[^0-9]/g, "");
-    if (!clean) return "";
-    return clean.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  }
+  // カテゴリ別予算
+  const expenseCategories = getCategories().filter(c => c.type === "expense");
+  const catBudgets = getCategoryBudgets();
+  const [catInputs, setCatInputs] = useState<Record<string, string>>(() => {
+    const map: Record<string, string> = {};
+    for (const b of catBudgets) {
+      map[b.categoryId] = b.amount > 0 ? b.amount.toLocaleString('ja-JP') : "";
+    }
+    return map;
+  });
+  const [catSaved, setCatSaved] = useState(false);
 
-  function handleSave() {
-    const amt = parseInt(input.replace(/,/g, ""), 10) || 0;
+  function handleSaveTotal() {
+    const amt = parseInt(totalInput.replace(/,/g, ""), 10) || 0;
     setMonthlyBudget(amt);
     onDataChange();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setTotalSaved(true);
+    setTimeout(() => setTotalSaved(false), 2000);
   }
 
-  function handleClear() {
-    setMonthlyBudget(0);
-    setInput("");
+  function handleSaveCat() {
+    for (const cat of expenseCategories) {
+      const raw = catInputs[cat.id] ?? "";
+      const amt = parseInt(raw.replace(/,/g, ""), 10) || 0;
+      setCategoryBudget(cat.id, amt);
+    }
     onDataChange();
+    setCatSaved(true);
+    setTimeout(() => setCatSaved(false), 2000);
   }
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-2xl shadow-sm p-4 space-y-4">
+      {/* 合計月予算 */}
+      <div className="bg-white rounded-2xl shadow-sm p-4 space-y-3">
         <div>
-          <p className="text-sm font-semibold text-gray-800 mb-1">月間支出予算</p>
-          <p className="text-xs text-gray-400">設定した金額がホーム画面に進捗バーで表示されます</p>
+          <p className="text-sm font-semibold text-gray-800">月間合計予算</p>
+          <p className="text-xs text-gray-400 mt-0.5">ホーム画面に全体の進捗バーを表示します</p>
         </div>
-
         <div className="flex items-center border-b-2 border-blue-500 pb-1">
-          <span className="text-xl text-gray-400 mr-2">¥</span>
+          <span className="text-lg text-gray-400 mr-2">¥</span>
           <input
             type="tel"
             inputMode="numeric"
-            value={input}
-            onChange={e => setInput(fmtInput(e.target.value))}
+            value={totalInput}
+            onChange={e => setTotalInput(fmtBudgetInput(e.target.value))}
             placeholder="例：100,000"
-            className="flex-1 text-2xl font-bold text-gray-900 outline-none bg-transparent"
+            className="flex-1 text-xl font-bold text-gray-900 outline-none bg-transparent"
           />
-        </div>
-
-        <div className="flex gap-2">
-          <button
-            onClick={handleSave}
-            className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-semibold active:bg-blue-700"
-          >
-            {saved ? "✓ 保存しました" : "保存する"}
-          </button>
-          {current > 0 && (
-            <button
-              onClick={handleClear}
-              className="px-4 py-3 bg-gray-100 text-gray-500 rounded-xl text-sm font-semibold"
-            >
-              削除
-            </button>
+          {totalCurrent > 0 && (
+            <button onClick={() => { setMonthlyBudget(0); setTotalInput(""); onDataChange(); }}
+              className="text-xs text-red-400 ml-2">削除</button>
           )}
         </div>
+        <button onClick={handleSaveTotal}
+          className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold active:bg-blue-700">
+          {totalSaved ? "✓ 保存しました" : "保存する"}
+        </button>
       </div>
 
-      {current > 0 && (
-        <div className="bg-blue-50 rounded-2xl p-4">
-          <p className="text-xs text-blue-600 font-semibold mb-1">現在の設定</p>
-          <p className="text-lg font-bold text-blue-800">
-            毎月 {formatCurrency(current)} の予算
-          </p>
-          <p className="text-xs text-blue-500 mt-1">ホーム画面で予算達成状況を確認できます</p>
+      {/* カテゴリ別予算 */}
+      <div className="bg-white rounded-2xl shadow-sm p-4 space-y-3">
+        <div>
+          <p className="text-sm font-semibold text-gray-800">カテゴリ別予算</p>
+          <p className="text-xs text-gray-400 mt-0.5">カテゴリごとに上限を設定できます（空欄=設定なし）</p>
         </div>
-      )}
+        <div className="space-y-2">
+          {expenseCategories.map(cat => (
+            <div key={cat.id} className="flex items-center gap-2">
+              <span className="text-lg w-7 text-center flex-shrink-0">{cat.icon}</span>
+              <p className="text-sm text-gray-700 w-20 flex-shrink-0 truncate">{cat.name}</p>
+              <div className="flex-1 flex items-center border-b border-gray-200 pb-0.5">
+                <span className="text-xs text-gray-400 mr-1">¥</span>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={catInputs[cat.id] ?? ""}
+                  onChange={e => setCatInputs(prev => ({ ...prev, [cat.id]: fmtBudgetInput(e.target.value) }))}
+                  placeholder="未設定"
+                  className="flex-1 text-sm font-medium text-gray-900 outline-none bg-transparent placeholder-gray-300"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        <button onClick={handleSaveCat}
+          className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold active:bg-blue-700">
+          {catSaved ? "✓ 保存しました" : "カテゴリ予算を保存"}
+        </button>
+      </div>
     </div>
   );
 }
