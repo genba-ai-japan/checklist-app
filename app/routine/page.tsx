@@ -95,7 +95,7 @@ export default function RoutinePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <header className="bg-lime-700 text-white px-4 py-4 sticky top-0 z-30">
+      <header className="bg-lime-600 text-white px-4 py-4 sticky top-0 z-30">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold">✅ {month}のルーティン</h1>

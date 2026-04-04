@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { loadGoals, saveGoals, addGoal, updateGoal, deleteGoal } from "@/lib/dashboard-storage";
+import { loadGoals, addGoal, updateGoal, deleteGoal, loadGoalCategories, saveGoalCategories } from "@/lib/dashboard-storage";
 import { Goal, GoalStatus, Priority } from "@/types";
 
-const CATEGORIES = ["すべて", "充填・調理課", "荷受け業務", "製造管理・荷受け業務", "製造管理", "人材育成", "外部・社内活動"];
 const STATUS_LABELS: Record<GoalStatus, string> = { not_started: "未着手", in_progress: "進行中", completed: "完了" };
 const STATUS_COLORS: Record<GoalStatus, string> = { not_started: "bg-gray-100 text-gray-600", in_progress: "bg-blue-100 text-blue-700", completed: "bg-green-100 text-green-700" };
 const PRIORITY_COLORS: Record<Priority, string> = { "◎": "bg-red-100 text-red-600", "○": "bg-yellow-100 text-yellow-700", "△": "bg-gray-100 text-gray-500" };
@@ -13,17 +12,28 @@ const EMPTY_GOAL = { priority: "○" as Priority, category: "製造管理", obje
 
 export default function GoalsPage() {
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [filter, setFilter] = useState("すべて");
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [form, setForm] = useState({ ...EMPTY_GOAL });
   const [showDelete, setShowDelete] = useState(false);
+  const [showCatEditor, setShowCatEditor] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
 
-  function reload() { setGoals(loadGoals()); }
+  function reload() {
+    setGoals(loadGoals());
+    const cats = loadGoalCategories();
+    setCategories(cats);
+  }
   useEffect(() => { reload(); }, []);
 
-  function openAdd() { setForm({ ...EMPTY_GOAL }); setEditingGoal(null); setShowForm(true); }
+  function openAdd() {
+    setForm({ ...EMPTY_GOAL, category: categories[0] ?? "その他" });
+    setEditingGoal(null);
+    setShowForm(true);
+  }
   function openEdit(goal: Goal) { setForm({ ...goal }); setEditingGoal(goal); setShowForm(true); setSelectedGoal(null); }
 
   function handleSave() {
@@ -53,6 +63,23 @@ export default function GoalsPage() {
     if (selectedGoal?.id === goal.id) setSelectedGoal(updated);
   }
 
+  function addCategory() {
+    const name = newCatName.trim();
+    if (!name || categories.includes(name)) return;
+    const updated = [...categories, name];
+    saveGoalCategories(updated);
+    setCategories(updated);
+    setNewCatName("");
+  }
+
+  function deleteCategory(cat: string) {
+    const updated = categories.filter((c) => c !== cat);
+    saveGoalCategories(updated);
+    setCategories(updated);
+    if (filter === cat) setFilter("すべて");
+  }
+
+  const allCategories = ["すべて", ...categories];
   const filtered = goals.filter((g) => filter === "すべて" || g.category === filter);
   const stats = { total: goals.length, done: goals.filter((g) => g.status === "completed").length, inProgress: goals.filter((g) => g.status === "in_progress").length };
 
@@ -77,13 +104,17 @@ export default function GoalsPage() {
       </header>
 
       <div className="overflow-x-auto bg-white border-b border-gray-200">
-        <div className="flex gap-1 px-3 py-2 min-w-max">
-          {CATEGORIES.map((cat) => (
+        <div className="flex gap-1 px-3 py-2 min-w-max items-center">
+          {allCategories.map((cat) => (
             <button key={cat} onClick={() => setFilter(cat)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${filter === cat ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"}`}>
               {cat}
             </button>
           ))}
+          <button onClick={() => setShowCatEditor(true)}
+            className="ml-1 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 whitespace-nowrap">
+            ✏️ 編集
+          </button>
         </div>
       </div>
 
@@ -111,6 +142,34 @@ export default function GoalsPage() {
           </div>
         ))}
       </main>
+
+      {/* カテゴリ編集モーダル */}
+      {showCatEditor && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={() => setShowCatEditor(false)}>
+          <div className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
+              <h3 className="font-bold text-gray-900">カテゴリを編集</h3>
+              <button onClick={() => setShowCatEditor(false)} className="text-gray-400 text-xl p-1">✕</button>
+            </div>
+            <div className="p-4 space-y-2">
+              {categories.map((cat) => (
+                <div key={cat} className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
+                  <span className="flex-1 text-sm text-gray-800">{cat}</span>
+                  <button onClick={() => deleteCategory(cat)} className="text-red-400 text-xs px-2 py-1 rounded-lg hover:bg-red-50">削除</button>
+                </div>
+              ))}
+              <div className="flex gap-2 mt-3">
+                <input value={newCatName} onChange={(e) => setNewCatName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") addCategory(); }}
+                  placeholder="新しいカテゴリ名"
+                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                <button onClick={addCategory} disabled={!newCatName.trim()}
+                  className="bg-blue-600 disabled:bg-gray-300 text-white font-bold px-4 py-2.5 rounded-xl text-sm">追加</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 詳細モーダル */}
       {selectedGoal && (
@@ -191,7 +250,7 @@ export default function GoalsPage() {
               </div>
               <F label="カテゴリ">
                 <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={ic}>
-                  {CATEGORIES.filter(c => c !== "すべて").map(c => <option key={c} value={c}>{c}</option>)}
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </F>
               <F label="目標・施策" required>

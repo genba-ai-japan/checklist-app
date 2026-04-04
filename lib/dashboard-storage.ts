@@ -1,4 +1,4 @@
-import { Goal, RoutineItem, ImprovementItem, GanttTask } from "@/types";
+import { Goal, RoutineItem, ImprovementItem, GanttTask, GanttPeriod } from "@/types";
 import { getCurrentAccountId } from "@/lib/session";
 
 function k(base: string) {
@@ -30,6 +30,21 @@ export function updateGoal(updated: Goal): void {
 }
 export function deleteGoal(id: string): void {
   saveGoals(loadGoals().filter((g) => g.id !== id));
+}
+
+// ─── Goal Categories ──────────────────────────────────────────────────────────
+const GC = "dashboard_goal_categories_v1";
+export const DEFAULT_GOAL_CATEGORIES = ["充填・調理課", "荷受け業務", "製造管理・荷受け業務", "製造管理", "人材育成", "外部・社内活動"];
+
+export function loadGoalCategories(): string[] {
+  if (typeof window === "undefined") return [...DEFAULT_GOAL_CATEGORIES];
+  const raw = localStorage.getItem(k(GC));
+  if (!raw) return [...DEFAULT_GOAL_CATEGORIES];
+  return JSON.parse(raw) as string[];
+}
+export function saveGoalCategories(categories: string[]): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(k(GC), JSON.stringify(categories));
 }
 
 // ─── Routine ──────────────────────────────────────────────────────────────────
@@ -96,11 +111,22 @@ export function deleteImprovement(id: string): void {
 // ─── Gantt ────────────────────────────────────────────────────────────────────
 const GA = "dashboard_gantt_v1";
 
+function migrateGanttTask(raw: Record<string, unknown>): GanttTask {
+  // Migrate old startWeek/endWeek format to periods array
+  if (!raw.periods && (raw.startWeek !== undefined || raw.endWeek !== undefined)) {
+    const start = typeof raw.startWeek === "number" ? raw.startWeek : 1;
+    const end = typeof raw.endWeek === "number" ? raw.endWeek : 4;
+    return { ...raw, periods: [{ startWeek: start, endWeek: end }] } as unknown as GanttTask;
+  }
+  return raw as unknown as GanttTask;
+}
+
 export function loadGanttTasks(): GanttTask[] {
   if (typeof window === "undefined") return getDefaultGanttTasks();
   const raw = localStorage.getItem(k(GA));
   if (!raw) { const d = getDefaultGanttTasks(); localStorage.setItem(k(GA), JSON.stringify(d)); return d; }
-  return JSON.parse(raw) as GanttTask[];
+  const parsed = JSON.parse(raw) as Record<string, unknown>[];
+  return parsed.map(migrateGanttTask);
 }
 export function saveGanttTasks(tasks: GanttTask[]): void {
   if (typeof window === "undefined") return;
@@ -119,6 +145,21 @@ export function deleteGanttTask(id: string): void {
   saveGanttTasks(loadGanttTasks().filter((t) => t.id !== id));
 }
 
+// ─── Gantt Categories ─────────────────────────────────────────────────────────
+const GAC = "dashboard_gantt_categories_v1";
+export const DEFAULT_GANTT_CATEGORIES = ["A. 製造管理業務", "B. 荷受け業務", "C. 充填・調理課", "D. 外部・社内活動"];
+
+export function loadGanttCategories(): string[] {
+  if (typeof window === "undefined") return [...DEFAULT_GANTT_CATEGORIES];
+  const raw = localStorage.getItem(k(GAC));
+  if (!raw) return [...DEFAULT_GANTT_CATEGORIES];
+  return JSON.parse(raw) as string[];
+}
+export function saveGanttCategories(categories: string[]): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(k(GAC), JSON.stringify(categories));
+}
+
 // ─── Export All (for CSV) ─────────────────────────────────────────────────────
 export function exportAllData() {
   return {
@@ -130,6 +171,10 @@ export function exportAllData() {
 }
 
 // ─── Default Data ─────────────────────────────────────────────────────────────
+function p(startWeek: number, endWeek: number): GanttPeriod[] {
+  return [{ startWeek, endWeek }];
+}
+
 function getDefaultGoals(): Goal[] {
   return [
     { id: "g1", no: 1, priority: "◎", category: "充填・調理課", objective: "お申し出・再調理0件維持", specificActions: "朝礼AIの活用。現場での声掛け。1ON1でのヒアリング。負荷が急にかかりすぎるとミスが増える。とくに5・6月は要注意。", kpi: "0件維持", deadline: "通年", resultComment: "", status: "in_progress" },
@@ -175,30 +220,30 @@ function getDefaultImprovements(): ImprovementItem[] {
 
 function getDefaultGanttTasks(): GanttTask[] {
   return [
-    { id: "a1", no: "A1", priority: "○", category: "A. 製造管理業務", taskName: "業務フロー完全習得", specificApproach: "OJT研修：日次→週次→月次", deadline: "7月末", startWeek: 1, endWeek: 16, color: "#6b7280" },
-    { id: "a2", no: "A2", priority: "○", category: "A. 製造管理業務", taskName: "ASP（綴め作業）", specificApproach: "製造管理必須基本スキル", deadline: "1ヶ月", startWeek: 1, endWeek: 5, color: "#6b7280" },
-    { id: "a3", no: "A3", priority: "○", category: "A. 製造管理業務", taskName: "発注（H在庫表）", specificApproach: "製造管理必須基本スキル", deadline: "1.5ヶ月", startWeek: 1, endWeek: 7, color: "#6b7280" },
-    { id: "a4", no: "A4", priority: "○", category: "A. 製造管理業務", taskName: "寿作業", specificApproach: "製造管理必須基本スキル", deadline: "1ヶ月", startWeek: 1, endWeek: 5, color: "#6b7280" },
-    { id: "a5", no: "A5", priority: "○", category: "A. 製造管理業務", taskName: "週1改善案の立案・実施", specificApproach: "毎週1件以上の改善アイデア", deadline: "通年 週1件以上", startWeek: 1, endWeek: 20, color: "#6b7280" },
-    { id: "a6", no: "A6", priority: "○", category: "A. 製造管理業務", taskName: "追加調理・工程ロス削減", specificApproach: "工程別原因分析→工程表再調整", deadline: "11～12月", startWeek: 12, endWeek: 20, color: "#6b7280" },
-    { id: "a7", no: "A7", priority: "△", category: "A. 製造管理業務", taskName: "在庫管理デジタル化", specificApproach: "在庫管理の問題点洗い出し", deadline: "1～3月", startWeek: 1, endWeek: 3, color: "#9ca3af" },
-    { id: "b1", no: "B1", priority: "○", category: "B. 荷受け業務", taskName: "荷受け業務流れ完全習得（1日→週→月）", specificApproach: "OJT研修：日次→週次→月次", deadline: "6月末", startWeek: 5, endWeek: 13, color: "#6b7280" },
-    { id: "b2", no: "B2", priority: "○", category: "B. 荷受け業務", taskName: "棚部作業習得", specificApproach: "製造管理必須基本スキル", deadline: "3ヶ月", startWeek: 9, endWeek: 17, color: "#6b7280" },
-    { id: "b3", no: "B3", priority: "○", category: "B. 荷受け業務", taskName: "検品作業習得", specificApproach: "基本の検品スキル習得", deadline: "1ヶ月", startWeek: 9, endWeek: 13, color: "#6b7280" },
-    { id: "b4", no: "B4", priority: "○", category: "B. 荷受け業務", taskName: "次工程も含めた動線改善", specificApproach: "次工程がやりやすいレイアウト", deadline: "6月", startWeek: 9, endWeek: 13, color: "#6b7280" },
-    { id: "b5", no: "B5", priority: "○", category: "B. 荷受け業務", taskName: "無駄作業の洗い出し", specificApproach: "現場観察＋ヒアリング→改善へ", deadline: "7月", startWeek: 9, endWeek: 17, color: "#6b7280" },
-    { id: "b6", no: "B6", priority: "△", category: "B. 荷受け業務", taskName: "ペーパーレス化・デジタル化", specificApproach: "荷受け記録のデジタル化", deadline: "8月", startWeek: 13, endWeek: 20, color: "#9ca3af" },
-    { id: "c1", no: "C1", priority: "○", category: "C. 充填・調理課", taskName: "毎月テーマ設定・品質改善", specificApproach: "お申し出MTG時テーマ決め", deadline: "通年 月1テーマ", startWeek: 1, endWeek: 20, color: "#6b7280" },
-    { id: "c2", no: "C2", priority: "○", category: "C. 充填・調理課", taskName: "お申し出・再調理0件維持", specificApproach: "朝礼AIの活用、充填内お申し出管理", deadline: "通年", startWeek: 1, endWeek: 20, color: "#6b7280" },
-    { id: "c3", no: "C3", priority: "○", category: "C. 充填・調理課", taskName: "調理課再調理ゼロ", specificApproach: "ルール洗い出し→毎月MTG", deadline: "通年", startWeek: 1, endWeek: 20, color: "#6b7280" },
-    { id: "c5", no: "C5", priority: "○", category: "C. 充填・調理課", taskName: "品前・安全衛生資料確認", specificApproach: "毎月W1に確認", deadline: "月1回", startWeek: 1, endWeek: 20, color: "#6b7280" },
-    { id: "c6", no: "C6", priority: "○", category: "C. 充填・調理課", taskName: "フィルム使用量削減", specificApproach: "切り替え枚数削減", deadline: "通年", startWeek: 1, endWeek: 20, color: "#6b7280" },
-    { id: "c7", no: "C7", priority: "○", category: "C. 充填・調理課", taskName: "1on1 月次実施（全員）", specificApproach: "毎月W1に各メンバーと面談", deadline: "通年 実施率100%", startWeek: 1, endWeek: 20, color: "#6b7280" },
-    { id: "c8", no: "C8", priority: "○", category: "C. 充填・調理課", taskName: "井上さんのリーダー候補育成", specificApproach: "目標設定→進捗確認→フィードバック", deadline: "半期で2件実施", startWeek: 1, endWeek: 20, color: "#6b7280" },
-    { id: "c9", no: "C9", priority: "△", category: "C. 充填・調理課", taskName: "本平さんのリーダー候補育成", specificApproach: "目標設定→進捗確認→フィードバック", deadline: "半期で2件実施", startWeek: 1, endWeek: 20, color: "#9ca3af" },
-    { id: "c10", no: "C10", priority: "△", category: "C. 充填・調理課", taskName: "AI設定（製造注意点）", specificApproach: "毎月AIシステムの更新", deadline: "毎月更新", startWeek: 1, endWeek: 20, color: "#9ca3af" },
-    { id: "d1", no: "D1", priority: "△", category: "D. 外部・社内活動", taskName: "面接", specificApproach: "面接の流れ自分なりにまとめる", deadline: "通年", startWeek: 1, endWeek: 20, color: "#9ca3af" },
-    { id: "d2", no: "D2", priority: "○", category: "D. 外部・社内活動", taskName: "FOOMA視察・最新品調査", specificApproach: "食品機械展示会", deadline: "6月 資料作成", startWeek: 5, endWeek: 13, color: "#6b7280" },
-    { id: "d3", no: "D3", priority: "△", category: "D. 外部・社内活動", taskName: "工場会議参加・議事録", specificApproach: "工場会議に参加。", deadline: "通年", startWeek: 1, endWeek: 20, color: "#9ca3af" },
+    { id: "a1", no: "A1", priority: "○", category: "A. 製造管理業務", taskName: "業務フロー完全習得", specificApproach: "OJT研修：日次→週次→月次", deadline: "7月末", periods: p(1, 16), color: "#6b7280" },
+    { id: "a2", no: "A2", priority: "○", category: "A. 製造管理業務", taskName: "ASP（綴め作業）", specificApproach: "製造管理必須基本スキル", deadline: "1ヶ月", periods: p(1, 5), color: "#6b7280" },
+    { id: "a3", no: "A3", priority: "○", category: "A. 製造管理業務", taskName: "発注（H在庫表）", specificApproach: "製造管理必須基本スキル", deadline: "1.5ヶ月", periods: p(1, 7), color: "#6b7280" },
+    { id: "a4", no: "A4", priority: "○", category: "A. 製造管理業務", taskName: "寿作業", specificApproach: "製造管理必須基本スキル", deadline: "1ヶ月", periods: p(1, 5), color: "#6b7280" },
+    { id: "a5", no: "A5", priority: "○", category: "A. 製造管理業務", taskName: "週1改善案の立案・実施", specificApproach: "毎週1件以上の改善アイデア", deadline: "通年 週1件以上", periods: p(1, 20), color: "#6b7280" },
+    { id: "a6", no: "A6", priority: "○", category: "A. 製造管理業務", taskName: "追加調理・工程ロス削減", specificApproach: "工程別原因分析→工程表再調整", deadline: "11～12月", periods: p(12, 20), color: "#6b7280" },
+    { id: "a7", no: "A7", priority: "△", category: "A. 製造管理業務", taskName: "在庫管理デジタル化", specificApproach: "在庫管理の問題点洗い出し", deadline: "1～3月", periods: p(1, 3), color: "#9ca3af" },
+    { id: "b1", no: "B1", priority: "○", category: "B. 荷受け業務", taskName: "荷受け業務流れ完全習得（1日→週→月）", specificApproach: "OJT研修：日次→週次→月次", deadline: "6月末", periods: p(5, 13), color: "#6b7280" },
+    { id: "b2", no: "B2", priority: "○", category: "B. 荷受け業務", taskName: "棚部作業習得", specificApproach: "製造管理必須基本スキル", deadline: "3ヶ月", periods: p(9, 17), color: "#6b7280" },
+    { id: "b3", no: "B3", priority: "○", category: "B. 荷受け業務", taskName: "検品作業習得", specificApproach: "基本の検品スキル習得", deadline: "1ヶ月", periods: p(9, 13), color: "#6b7280" },
+    { id: "b4", no: "B4", priority: "○", category: "B. 荷受け業務", taskName: "次工程も含めた動線改善", specificApproach: "次工程がやりやすいレイアウト", deadline: "6月", periods: p(9, 13), color: "#6b7280" },
+    { id: "b5", no: "B5", priority: "○", category: "B. 荷受け業務", taskName: "無駄作業の洗い出し", specificApproach: "現場観察＋ヒアリング→改善へ", deadline: "7月", periods: p(9, 17), color: "#6b7280" },
+    { id: "b6", no: "B6", priority: "△", category: "B. 荷受け業務", taskName: "ペーパーレス化・デジタル化", specificApproach: "荷受け記録のデジタル化", deadline: "8月", periods: p(13, 20), color: "#9ca3af" },
+    { id: "c1", no: "C1", priority: "○", category: "C. 充填・調理課", taskName: "毎月テーマ設定・品質改善", specificApproach: "お申し出MTG時テーマ決め", deadline: "通年 月1テーマ", periods: p(1, 20), color: "#6b7280" },
+    { id: "c2", no: "C2", priority: "○", category: "C. 充填・調理課", taskName: "お申し出・再調理0件維持", specificApproach: "朝礼AIの活用、充填内お申し出管理", deadline: "通年", periods: p(1, 20), color: "#6b7280" },
+    { id: "c3", no: "C3", priority: "○", category: "C. 充填・調理課", taskName: "調理課再調理ゼロ", specificApproach: "ルール洗い出し→毎月MTG", deadline: "通年", periods: p(1, 20), color: "#6b7280" },
+    { id: "c5", no: "C5", priority: "○", category: "C. 充填・調理課", taskName: "品前・安全衛生資料確認", specificApproach: "毎月W1に確認", deadline: "月1回", periods: p(1, 20), color: "#6b7280" },
+    { id: "c6", no: "C6", priority: "○", category: "C. 充填・調理課", taskName: "フィルム使用量削減", specificApproach: "切り替え枚数削減", deadline: "通年", periods: p(1, 20), color: "#6b7280" },
+    { id: "c7", no: "C7", priority: "○", category: "C. 充填・調理課", taskName: "1on1 月次実施（全員）", specificApproach: "毎月W1に各メンバーと面談", deadline: "通年 実施率100%", periods: p(1, 20), color: "#6b7280" },
+    { id: "c8", no: "C8", priority: "○", category: "C. 充填・調理課", taskName: "井上さんのリーダー候補育成", specificApproach: "目標設定→進捗確認→フィードバック", deadline: "半期で2件実施", periods: p(1, 20), color: "#6b7280" },
+    { id: "c9", no: "C9", priority: "△", category: "C. 充填・調理課", taskName: "本平さんのリーダー候補育成", specificApproach: "目標設定→進捗確認→フィードバック", deadline: "半期で2件実施", periods: p(1, 20), color: "#9ca3af" },
+    { id: "c10", no: "C10", priority: "△", category: "C. 充填・調理課", taskName: "AI設定（製造注意点）", specificApproach: "毎月AIシステムの更新", deadline: "毎月更新", periods: p(1, 20), color: "#9ca3af" },
+    { id: "d1", no: "D1", priority: "△", category: "D. 外部・社内活動", taskName: "面接", specificApproach: "面接の流れ自分なりにまとめる", deadline: "通年", periods: p(1, 20), color: "#9ca3af" },
+    { id: "d2", no: "D2", priority: "○", category: "D. 外部・社内活動", taskName: "FOOMA視察・最新品調査", specificApproach: "食品機械展示会", deadline: "6月 資料作成", periods: p(5, 13), color: "#6b7280" },
+    { id: "d3", no: "D3", priority: "△", category: "D. 外部・社内活動", taskName: "工場会議参加・議事録", specificApproach: "工場会議に参加。", deadline: "通年", periods: p(1, 20), color: "#9ca3af" },
   ];
 }

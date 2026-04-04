@@ -176,11 +176,31 @@ export function importRoutine(text: string): { count: number; errors: string[] }
 }
 
 // ─── ガントタスク ─────────────────────────────────────────────────────────────
-const GANTT_HEADERS = ["番号", "優先", "カテゴリ", "タスク名", "具体的取り組み", "期限", "開始週", "終了週"];
+// CSV format: 期間は "1-4,8-12" のようにカンマ区切り（複数期間対応）
+const GANTT_HEADERS = ["番号", "優先", "カテゴリ", "タスク名", "具体的取り組み", "期限", "期間（開始週-終了週）"];
+
+function serializePeriods(periods: GanttTask["periods"]): string {
+  if (!periods?.length) return "1-4";
+  return periods.map((p) => `${p.startWeek}-${p.endWeek}`).join(" / ");
+}
+
+function parsePeriods(raw: string): GanttTask["periods"] {
+  const parts = raw.split(/[,/]+/).map((s) => s.trim()).filter(Boolean);
+  const result: GanttTask["periods"] = [];
+  for (const part of parts) {
+    const m = part.match(/(\d+)\s*[-~〜]\s*(\d+)/);
+    if (m) result.push({ startWeek: parseInt(m[1]), endWeek: parseInt(m[2]) });
+    else {
+      const n = parseInt(part);
+      if (!isNaN(n)) result.push({ startWeek: n, endWeek: n });
+    }
+  }
+  return result.length ? result : [{ startWeek: 1, endWeek: 4 }];
+}
 
 export function exportGantt(): void {
   const tasks = loadGanttTasks();
-  const rows = tasks.map((t) => [t.no, t.priority, t.category, t.taskName, t.specificApproach, t.deadline, String(t.startWeek), String(t.endWeek)]);
+  const rows = tasks.map((t) => [t.no, t.priority, t.category, t.taskName, t.specificApproach, t.deadline, serializePeriods(t.periods)]);
   downloadCSV(toCSV(GANTT_HEADERS, rows), "gantt_2026.csv");
 }
 
@@ -195,6 +215,16 @@ export function importGantt(text: string): { count: number; errors: string[] } {
   parsed.slice(1).forEach((row) => {
     const name = row[nameIdx]?.trim();
     if (!name) return;
+    // Support both old (開始週/終了週) and new (期間) column formats
+    const periodColIdx = header.indexOf("期間（開始週-終了週）");
+    let periods: GanttTask["periods"];
+    if (periodColIdx >= 0 && row[periodColIdx]) {
+      periods = parsePeriods(row[periodColIdx]);
+    } else {
+      const startWeek = parseInt(row[header.indexOf("開始週")] ?? "1") || 1;
+      const endWeek = parseInt(row[header.indexOf("終了週")] ?? "4") || 4;
+      periods = [{ startWeek, endWeek }];
+    }
     const task: GanttTask = {
       id: crypto.randomUUID(),
       no: row[header.indexOf("番号")] ?? "",
@@ -203,8 +233,7 @@ export function importGantt(text: string): { count: number; errors: string[] } {
       taskName: name,
       specificApproach: row[header.indexOf("具体的取り組み")] ?? "",
       deadline: row[header.indexOf("期限")] ?? "",
-      startWeek: parseInt(row[header.indexOf("開始週")] ?? "1") || 1,
-      endWeek: parseInt(row[header.indexOf("終了週")] ?? "4") || 4,
+      periods,
       color: "#6b7280",
     };
     const existIdx = existing.findIndex((t) => t.taskName === name);

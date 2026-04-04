@@ -6,12 +6,29 @@ import { loadGoals, loadRoutine, loadImprovements } from "@/lib/dashboard-storag
 import { Goal, RoutineItem, ImprovementItem } from "@/types";
 import { useAuth } from "@/lib/auth-context";
 
+function getTodayStr() { return new Date().toISOString().slice(0, 10); }
+function getMonthStr() { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}`; }
+function getISOWeek() {
+  const n = new Date();
+  const d = new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const y = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return `${d.getUTCFullYear()}-W${String(Math.ceil((((d.getTime() - y.getTime()) / 86400000) + 1) / 7)).padStart(2,"0")}`;
+}
+function getMonthWeekKey(freq: string): string {
+  const m = getMonthStr();
+  if (freq === "毎日 午前" || freq === "毎日 午後") return getTodayStr();
+  if (freq === "毎週") return getISOWeek();
+  if (freq === "毎月") return m;
+  const w = freq.replace("週目", "");
+  return `${m}-W${w}`;
+}
+
 export default function DashboardPage() {
   const { openSettings, username } = useAuth();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [routine, setRoutine] = useState<RoutineItem[]>([]);
   const [improvements, setImprovements] = useState<ImprovementItem[]>([]);
-  const today = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     setGoals(loadGoals());
@@ -21,15 +38,14 @@ export default function DashboardPage() {
 
   const goalDone = goals.filter((g) => g.status === "completed").length;
   const goalInProgress = goals.filter((g) => g.status === "in_progress").length;
-  const todayRoutine = routine.filter((r) => r.frequency === "毎日 午前" || r.frequency === "毎日 午後");
-  const todayDone = todayRoutine.filter((r) => r.checkedDates.includes(today)).length;
+  const monthRoutineChecked = routine.filter((r) => r.checkedDates.includes(getMonthWeekKey(r.frequency))).length;
   const improvInProgress = improvements.filter((i) => i.status === "進行中").length;
   const improvDone = improvements.filter((i) => i.status === "完了").length;
   const weekLabel = `${Math.ceil(new Date().getDate() / 7)}週目`;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <header className="bg-lime-700 text-white px-4 py-5">
+      <header className="bg-lime-600 text-white px-4 py-5">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs text-lime-200 font-medium">2026年度 {username && `· ${username}`}</p>
@@ -48,20 +64,21 @@ export default function DashboardPage() {
       <main className="px-4 py-4 space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <SummaryCard href="/goals" icon="🎯" label="目標管理" value={`${goalInProgress}件 進行中`} sub={`完了 ${goalDone} / 全${goals.length}件`} color="blue" />
-          <SummaryCard href="/routine" icon="✅" label="今日のルーティン" value={`${todayDone} / ${todayRoutine.length} 完了`} sub={`全${routine.length}件のルーティン`} color="lime" />
+          <SummaryCard href="/routine" icon="✅" label="今月のルーティン" value={`${monthRoutineChecked} / ${routine.length} 完了`} sub={`全${routine.length}件のルーティン`} color="lime" />
           <SummaryCard href="/improvements" icon="💡" label="改善台帳" value={`${improvInProgress}件 進行中`} sub={`完了 ${improvDone} / 全${improvements.length}件`} color="yellow" />
           <SummaryCard href="/gantt" icon="📅" label="年間ガントチャート" value="2026年度計画" sub="4月〜3月" color="purple" />
         </div>
 
-        {/* 今日のルーティン */}
+        {/* 今月のルーティン */}
         <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="font-bold text-gray-800">今日のルーティン</h2>
+            <h2 className="font-bold text-gray-800">今月のルーティン</h2>
             <Link href="/routine" className="text-xs text-blue-500">すべて見る</Link>
           </div>
           <div className="divide-y divide-gray-50">
-            {todayRoutine.map((item) => {
-              const checked = item.checkedDates.includes(today);
+            {routine.map((item) => {
+              const key = getMonthWeekKey(item.frequency);
+              const checked = item.checkedDates.includes(key);
               return (
                 <div key={item.id} className="px-4 py-3 flex items-center gap-3">
                   <span className={`text-xl ${checked ? "opacity-100" : "opacity-30"}`}>{checked ? "✅" : "⬜"}</span>
@@ -69,9 +86,13 @@ export default function DashboardPage() {
                     <p className={`text-sm font-medium ${checked ? "line-through text-gray-400" : "text-gray-800"}`}>{item.task}</p>
                     <p className="text-xs text-gray-400">{item.frequency} · {item.requiredTime}</p>
                   </div>
+                  {checked && <span className="text-xs text-lime-600 font-medium shrink-0">完了</span>}
                 </div>
               );
             })}
+            {routine.length === 0 && (
+              <p className="px-4 py-4 text-sm text-gray-400 text-center">ルーティンが登録されていません</p>
+            )}
           </div>
         </section>
 

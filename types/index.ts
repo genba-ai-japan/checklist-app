@@ -50,6 +50,11 @@ export interface ImprovementItem {
   effectConfirmation: string;
 }
 
+export interface GanttPeriod {
+  startWeek: number;  // 1 = April W1
+  endWeek: number;
+}
+
 export interface GanttTask {
   id: string;
   no: string;
@@ -58,7 +63,6 @@ export interface GanttTask {
   taskName: string;
   specificApproach: string;
   deadline: string;
-  startWeek: number;   // 1 = April W1
-  endWeek: number;
+  periods: GanttPeriod[];
   color: string;
 }

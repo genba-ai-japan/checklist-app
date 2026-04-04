@@ -86,11 +86,11 @@ export default function LoginGuard({ children }: { children: React.ReactNode }) 
   // ── アカウント選択画面 ──────────────────────────────────────────────────────
   if (screen === "account_list") {
     return (
-      <div className="fixed inset-0 bg-lime-800 flex flex-col items-center justify-center z-[100] px-6">
+      <div className="fixed inset-0 bg-blue-700 flex flex-col items-center justify-center z-[100] px-6">
         <div className="text-center mb-8">
           <p className="text-5xl mb-3">🏭</p>
           <h1 className="text-2xl font-bold text-white">業務ダッシュボード</h1>
-          <p className="text-lime-300 text-sm mt-1">2026年度</p>
+          <p className="text-blue-200 text-sm mt-1">2026年度</p>
         </div>
         <div className="w-full max-w-sm space-y-3 mb-6">
           {accounts.map((acc) => (
@@ -102,14 +102,14 @@ export default function LoginGuard({ children }: { children: React.ReactNode }) 
               <span className="text-3xl">{acc.avatar}</span>
               <div>
                 <p className="font-bold text-white text-lg">{acc.username}</p>
-                <p className="text-lime-300 text-xs">タップしてログイン</p>
+                <p className="text-blue-200 text-xs">タップしてログイン</p>
               </div>
             </button>
           ))}
         </div>
         <button
           onClick={() => setScreen("create_account")}
-          className="text-lime-300 text-sm underline"
+          className="text-blue-200 text-sm underline"
         >
           ＋ 新しいアカウントを作成
         </button>
@@ -120,17 +120,17 @@ export default function LoginGuard({ children }: { children: React.ReactNode }) 
   // ── PIN入力画面 ──────────────────────────────────────────────────────────────
   if (screen === "pin_entry" && selectedAccount) {
     return (
-      <div className="fixed inset-0 bg-lime-800 flex flex-col items-center justify-center z-[100] select-none">
+      <div className="fixed inset-0 bg-blue-700 flex flex-col items-center justify-center z-[100] select-none">
         <button
           onClick={() => { setScreen("account_list"); setPin(""); setPinError(false); }}
-          className="absolute top-12 left-6 text-lime-300 text-sm"
+          className="absolute top-12 left-6 text-blue-200 text-sm"
         >
           ← 戻る
         </button>
         <div className="text-center mb-8">
           <p className="text-5xl mb-2">{selectedAccount.avatar}</p>
           <p className="text-xl font-bold text-white">{selectedAccount.username}</p>
-          <p className="text-lime-300 text-sm mt-1">PINを入力してください</p>
+          <p className="text-blue-200 text-sm mt-1">PINを入力してください</p>
         </div>
         <div className={`flex gap-5 mb-6 transition-transform duration-100 ${shake ? "scale-110" : ""}`}>
           {[0,1,2,3].map((i) => (
@@ -208,14 +208,14 @@ function CreateAccountScreen({
   }, [confirmPin]);
 
   return (
-    <div className="fixed inset-0 bg-lime-800 flex flex-col items-center justify-center z-[100] px-6 select-none">
+    <div className="fixed inset-0 bg-blue-700 flex flex-col items-center justify-center z-[100] px-6 select-none">
       {onBack && (
-        <button onClick={onBack} className="absolute top-12 left-6 text-lime-300 text-sm">← 戻る</button>
+        <button onClick={onBack} className="absolute top-12 left-6 text-blue-200 text-sm">← 戻る</button>
       )}
       <div className="text-center mb-8">
         <p className="text-5xl mb-3">🏭</p>
         <h1 className="text-2xl font-bold text-white">{isFirst ? "ようこそ！" : "新しいアカウント"}</h1>
-        <p className="text-lime-300 text-sm mt-1">{isFirst ? "まず、アカウントを作成してください" : "アカウントを追加します"}</p>
+        <p className="text-blue-200 text-sm mt-1">{isFirst ? "まず、アカウントを作成してください" : "アカウントを追加します"}</p>
       </div>
 
       {step === "name" && (
@@ -235,7 +235,7 @@ function CreateAccountScreen({
           <button
             onClick={() => { if (username.trim()) setStep("pin"); }}
             disabled={!username.trim()}
-            className="w-full bg-white text-lime-800 font-bold py-4 rounded-2xl text-lg disabled:opacity-40"
+            className="w-full bg-white text-blue-700 font-bold py-4 rounded-2xl text-lg disabled:opacity-40"
           >
             次へ →
           </button>
@@ -352,7 +352,7 @@ function SettingsModal({
 
         {step === "menu" && (
           <div className="p-4 space-y-3">
-            <div className="bg-lime-50 rounded-2xl p-4 flex items-center gap-3 mb-4">
+            <div className="bg-blue-50 rounded-2xl p-4 flex items-center gap-3 mb-4">
               <span className="text-3xl">{account.avatar}</span>
               <div>
                 <p className="font-bold text-gray-900">{account.username}</p>
