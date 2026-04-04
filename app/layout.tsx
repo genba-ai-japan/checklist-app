@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
+import LoginGuard from "@/components/LoginGuard";
+import UpdateBanner from "@/components/UpdateBanner";
 
 export const metadata: Metadata = {
   title: "2026年度 業務ダッシュボード",
@@ -21,8 +23,11 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className="antialiased min-h-screen bg-gray-50">
-        {children}
-        <BottomNav />
+        <LoginGuard>
+          <UpdateBanner />
+          {children}
+          <BottomNav />
+        </LoginGuard>
       </body>
     </html>
   );

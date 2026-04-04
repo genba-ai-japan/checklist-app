@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { loadGoals, loadRoutine, loadImprovements } from "@/lib/dashboard-storage";
 import { Goal, RoutineItem, ImprovementItem } from "@/types";
+import { useAuth } from "@/lib/auth-context";
 
 export default function DashboardPage() {
+  const { openSettings } = useAuth();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [routine, setRoutine] = useState<RoutineItem[]>([]);
   const [improvements, setImprovements] = useState<ImprovementItem[]>([]);
@@ -34,11 +36,21 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* ヘッダー */}
       <header className="bg-green-700 text-white px-4 py-5">
-        <p className="text-xs text-green-200 font-medium">2026年度</p>
-        <h1 className="text-2xl font-bold mt-0.5">業務ダッシュボード</h1>
-        <p className="text-sm text-green-200 mt-1">
-          {new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}　{weekLabel}
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-xs text-green-200 font-medium">2026年度</p>
+            <h1 className="text-2xl font-bold mt-0.5">業務ダッシュボード</h1>
+            <p className="text-sm text-green-200 mt-1">
+              {new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}　{weekLabel}
+            </p>
+          </div>
+          <button
+            onClick={openSettings}
+            className="bg-white/20 active:bg-white/30 rounded-full w-10 h-10 flex items-center justify-center text-xl mt-1"
+          >
+            ⚙️
+          </button>
+        </div>
       </header>
 
       <main className="px-4 py-4 space-y-4">
@@ -123,7 +135,7 @@ export default function DashboardPage() {
                     <p className="text-sm font-medium text-gray-800 flex-1">{goal.objective}</p>
                   </div>
                   {goal.deadline && (
-                    <p className="text-xs text-gray-400 mt-1 ml-0">期限: {goal.deadline}</p>
+                    <p className="text-xs text-gray-400 mt-1">期限: {goal.deadline}</p>
                   )}
                 </div>
               ))}
@@ -156,31 +168,6 @@ export default function DashboardPage() {
                 ))}
             </div>
           )}
-        </section>
-
-        {/* クイックリンク */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <h2 className="font-bold text-gray-800">クイックリンク</h2>
-          </div>
-          <div className="px-4 py-3 grid grid-cols-2 gap-2">
-            <Link href="/improvements" className="bg-yellow-50 border border-yellow-100 rounded-xl p-3 text-center active:bg-yellow-100">
-              <p className="text-xl">💡</p>
-              <p className="text-xs font-medium text-yellow-700 mt-1">改善を追加</p>
-            </Link>
-            <Link href="/routine" className="bg-green-50 border border-green-100 rounded-xl p-3 text-center active:bg-green-100">
-              <p className="text-xl">✅</p>
-              <p className="text-xs font-medium text-green-700 mt-1">ルーティン確認</p>
-            </Link>
-            <Link href="/gantt" className="bg-purple-50 border border-purple-100 rounded-xl p-3 text-center active:bg-purple-100">
-              <p className="text-xl">📅</p>
-              <p className="text-xs font-medium text-purple-700 mt-1">年間計画</p>
-            </Link>
-            <Link href="/records" className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-center active:bg-blue-100">
-              <p className="text-xl">📷</p>
-              <p className="text-xs font-medium text-blue-700 mt-1">機械設定台帳</p>
-            </Link>
-          </div>
         </section>
       </main>
     </div>
