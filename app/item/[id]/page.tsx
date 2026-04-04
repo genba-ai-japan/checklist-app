@@ -25,7 +25,7 @@ export default function ItemDetailPage() {
   async function handleDelete() {
     setDeleting(true);
     await deleteRecord(id);
-    router.push("/");
+    router.push("/records");
   }
 
   if (loading) {
@@ -40,7 +40,7 @@ export default function ItemDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
         <p className="text-gray-500">データが見つかりません</p>
-        <Link href="/" className="text-blue-500 underline">一覧に戻る</Link>
+        <Link href="/records" className="text-blue-500 underline">一覧に戻る</Link>
       </div>
     );
   }

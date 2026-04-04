@@ -1,145 +1,229 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { MachineRecord } from "@/types";
-import { getAllRecords, searchRecords } from "@/lib/storage";
+import { loadGoals, loadRoutine, loadImprovements } from "@/lib/dashboard-storage";
+import { Goal, RoutineItem, ImprovementItem } from "@/types";
 
-export default function HomePage() {
-  const [records, setRecords] = useState<MachineRecord[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = searchQuery
-        ? await searchRecords(searchQuery)
-        : await getAllRecords();
-      setRecords(data);
-    } finally {
-      setLoading(false);
-    }
-  }, [searchQuery]);
+export default function DashboardPage() {
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [routine, setRoutine] = useState<RoutineItem[]>([]);
+  const [improvements, setImprovements] = useState<ImprovementItem[]>([]);
+  const today = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    setGoals(loadGoals());
+    setRoutine(loadRoutine());
+    setImprovements(loadImprovements());
+  }, []);
+
+  const goalDone = goals.filter((g) => g.status === "completed").length;
+  const goalInProgress = goals.filter((g) => g.status === "in_progress").length;
+
+  const todayRoutine = routine.filter(
+    (r) => r.frequency === "毎日 午前" || r.frequency === "毎日 午後"
+  );
+  const todayDone = todayRoutine.filter((r) => r.checkedDates.includes(today)).length;
+
+  const improvInProgress = improvements.filter((i) => i.status === "進行中").length;
+  const improvDone = improvements.filter((i) => i.status === "完了").length;
+
+  const weekLabel = getWeekLabel();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20">
       {/* ヘッダー */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between mb-3">
-            <h1 className="text-xl font-bold text-gray-900">🏭 機械設定台帳</h1>
-            <span className="text-sm text-gray-400">{records.length}件</span>
-          </div>
-          {/* 検索 */}
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="製品名で検索..."
-              className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl"
-              >
-                ×
-              </button>
-            )}
-          </div>
-        </div>
+      <header className="bg-green-700 text-white px-4 py-5">
+        <p className="text-xs text-green-200 font-medium">2026年度</p>
+        <h1 className="text-2xl font-bold mt-0.5">業務ダッシュボード</h1>
+        <p className="text-sm text-green-200 mt-1">
+          {new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}　{weekLabel}
+        </p>
       </header>
 
-      {/* 一覧 */}
-      <main className="px-4 py-4 pb-28 space-y-3">
-        {loading ? (
-          <p className="text-center py-12 text-gray-400">読み込み中...</p>
-        ) : records.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-4xl mb-2">🔍</p>
-            <p className="text-gray-500">
-              {searchQuery ? `「${searchQuery}」の結果なし` : "データがありません"}
-            </p>
-          </div>
-        ) : (
-          records.map((r) => <RecordCard key={r.id} record={r} />)
-        )}
-      </main>
+      <main className="px-4 py-4 space-y-4">
+        {/* サマリーカード */}
+        <div className="grid grid-cols-2 gap-3">
+          <SummaryCard
+            href="/goals"
+            icon="🎯"
+            label="目標管理"
+            value={`${goalInProgress}件 進行中`}
+            sub={`完了 ${goalDone} / 全${goals.length}件`}
+            color="blue"
+          />
+          <SummaryCard
+            href="/routine"
+            icon="✅"
+            label="今日のルーティン"
+            value={`${todayDone} / ${todayRoutine.length} 完了`}
+            sub={`全${routine.length}件のルーティン`}
+            color="green"
+          />
+          <SummaryCard
+            href="/improvements"
+            icon="💡"
+            label="改善台帳"
+            value={`${improvInProgress}件 進行中`}
+            sub={`完了 ${improvDone} / 全${improvements.length}件`}
+            color="yellow"
+          />
+          <SummaryCard
+            href="/gantt"
+            icon="📅"
+            label="年間ガントチャート"
+            value="2026年度計画"
+            sub="4月〜3月"
+            color="purple"
+          />
+        </div>
 
-      {/* 新規登録ボタン */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-50 to-transparent">
-        <Link href="/new">
-          <button className="w-full bg-blue-600 active:bg-blue-800 text-white font-bold py-4 rounded-2xl text-lg shadow-lg">
-            ＋ 新規登録
-          </button>
-        </Link>
-      </div>
+        {/* 今日のルーティン */}
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+            <h2 className="font-bold text-gray-800">今日のルーティン</h2>
+            <Link href="/routine" className="text-xs text-blue-500">すべて見る</Link>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {todayRoutine.map((item) => {
+              const checked = item.checkedDates.includes(today);
+              return (
+                <div key={item.id} className="px-4 py-3 flex items-center gap-3">
+                  <span className={`text-xl ${checked ? "opacity-100" : "opacity-30"}`}>
+                    {checked ? "✅" : "⬜"}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium ${checked ? "line-through text-gray-400" : "text-gray-800"}`}>
+                      {item.task}
+                    </p>
+                    <p className="text-xs text-gray-400">{item.frequency} · {item.requiredTime}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* 優先目標 */}
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+            <h2 className="font-bold text-gray-800">◎ 優先目標（進行中）</h2>
+            <Link href="/goals" className="text-xs text-blue-500">すべて見る</Link>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {goals
+              .filter((g) => g.priority === "◎" && g.status === "in_progress")
+              .slice(0, 5)
+              .map((goal) => (
+                <div key={goal.id} className="px-4 py-3">
+                  <div className="flex items-start gap-2">
+                    <span className="text-xs bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded mt-0.5 shrink-0">
+                      {goal.category.replace("充填・調理課", "充填").replace("製造管理・荷受け業務", "製造/荷受")}
+                    </span>
+                    <p className="text-sm font-medium text-gray-800 flex-1">{goal.objective}</p>
+                  </div>
+                  {goal.deadline && (
+                    <p className="text-xs text-gray-400 mt-1 ml-0">期限: {goal.deadline}</p>
+                  )}
+                </div>
+              ))}
+          </div>
+        </section>
+
+        {/* 改善台帳（進行中） */}
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+            <h2 className="font-bold text-gray-800">💡 改善台帳（進行中）</h2>
+            <Link href="/improvements" className="text-xs text-blue-500">すべて見る</Link>
+          </div>
+          {improvements.filter((i) => i.status === "進行中").length === 0 ? (
+            <p className="px-4 py-4 text-sm text-gray-400 text-center">進行中の改善はありません</p>
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {improvements
+                .filter((i) => i.status === "進行中")
+                .slice(0, 3)
+                .map((item) => (
+                  <div key={item.id} className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs bg-yellow-100 text-yellow-700 font-bold px-1.5 py-0.5 rounded shrink-0">
+                        No.{item.no}
+                      </span>
+                      <p className="text-sm font-medium text-gray-800 flex-1 truncate">{item.improvementContent}</p>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">{item.problem} · {item.person} · 期限: {item.deadline}</p>
+                  </div>
+                ))}
+            </div>
+          )}
+        </section>
+
+        {/* クイックリンク */}
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100">
+            <h2 className="font-bold text-gray-800">クイックリンク</h2>
+          </div>
+          <div className="px-4 py-3 grid grid-cols-2 gap-2">
+            <Link href="/improvements" className="bg-yellow-50 border border-yellow-100 rounded-xl p-3 text-center active:bg-yellow-100">
+              <p className="text-xl">💡</p>
+              <p className="text-xs font-medium text-yellow-700 mt-1">改善を追加</p>
+            </Link>
+            <Link href="/routine" className="bg-green-50 border border-green-100 rounded-xl p-3 text-center active:bg-green-100">
+              <p className="text-xl">✅</p>
+              <p className="text-xs font-medium text-green-700 mt-1">ルーティン確認</p>
+            </Link>
+            <Link href="/gantt" className="bg-purple-50 border border-purple-100 rounded-xl p-3 text-center active:bg-purple-100">
+              <p className="text-xl">📅</p>
+              <p className="text-xs font-medium text-purple-700 mt-1">年間計画</p>
+            </Link>
+            <Link href="/records" className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-center active:bg-blue-100">
+              <p className="text-xl">📷</p>
+              <p className="text-xs font-medium text-blue-700 mt-1">機械設定台帳</p>
+            </Link>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
 
-function RecordCard({ record }: { record: MachineRecord }) {
-  const dateStr = new Date(record.registeredAt).toLocaleDateString("ja-JP", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
+function SummaryCard({
+  href, icon, label, value, sub, color,
+}: {
+  href: string;
+  icon: string;
+  label: string;
+  value: string;
+  sub: string;
+  color: "blue" | "green" | "yellow" | "purple";
+}) {
+  const colors = {
+    blue: "bg-blue-50 border-blue-100",
+    green: "bg-green-50 border-green-100",
+    yellow: "bg-yellow-50 border-yellow-100",
+    purple: "bg-purple-50 border-purple-100",
+  };
+  const textColors = {
+    blue: "text-blue-700",
+    green: "text-green-700",
+    yellow: "text-yellow-700",
+    purple: "text-purple-700",
+  };
   return (
-    <Link href={`/item/${record.id}`}>
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden active:bg-gray-50">
-        <div className="flex gap-3 p-3">
-          {/* サムネイル */}
-          <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center">
-            {record.photoUrl ? (
-              <Image
-                src={record.photoUrl}
-                alt="設定写真"
-                width={80}
-                height={80}
-                className="object-cover w-full h-full"
-              />
-            ) : (
-              <span className="text-3xl">📷</span>
-            )}
-          </div>
-          {/* テキスト */}
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-gray-900 text-base truncate">{record.productName}</p>
-            <div className="flex flex-wrap gap-1 mt-1">
-              {record.contentVolume && (
-                <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
-                  {record.contentVolume}
-                </span>
-              )}
-              {record.packType && (
-                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                  {record.packType}
-                </span>
-              )}
-              {record.machineNumber && (
-                <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full">
-                  機械 {record.machineNumber}
-                </span>
-              )}
-            </div>
-            {record.settingsMemo && (
-              <p className="text-xs text-gray-500 mt-1.5 line-clamp-2">{record.settingsMemo}</p>
-            )}
-            <p className="text-xs text-gray-300 mt-1">{dateStr}</p>
-          </div>
-          <span className="text-gray-300 self-center">›</span>
-        </div>
+    <Link href={href}>
+      <div className={`${colors[color]} border rounded-2xl p-3 active:opacity-70`}>
+        <p className="text-2xl">{icon}</p>
+        <p className={`text-xs font-medium ${textColors[color]} mt-1`}>{label}</p>
+        <p className="text-sm font-bold text-gray-800 mt-0.5 leading-tight">{value}</p>
+        <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
       </div>
     </Link>
   );
+}
+
+function getWeekLabel(): string {
+  const now = new Date();
+  const day = now.getDate();
+  const week = Math.ceil(day / 7);
+  return `${week}週目`;
 }
