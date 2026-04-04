@@ -1,22 +1,32 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
 
 interface AuthContextValue {
   openSettings: () => void;
+  accountId: string;
+  username: string;
 }
 
-const AuthContext = createContext<AuthContextValue>({ openSettings: () => {} });
+const AuthContext = createContext<AuthContextValue>({
+  openSettings: () => {},
+  accountId: "default",
+  username: "",
+});
 
 export function AuthProvider({
   children,
   onOpenSettings,
+  accountId,
+  username,
 }: {
   children: React.ReactNode;
   onOpenSettings: () => void;
+  accountId: string;
+  username: string;
 }) {
   return (
-    <AuthContext.Provider value={{ openSettings: onOpenSettings }}>
+    <AuthContext.Provider value={{ openSettings: onOpenSettings, accountId, username }}>
       {children}
     </AuthContext.Provider>
   );
