@@ -14,19 +14,20 @@ const MONTH_HEADERS = [
 ];
 
 const DEFAULT_CAT_COLORS: Record<string, { header: string; bar: string; light: string }> = {
-  "製造管理":          { header: "bg-blue-700 text-white",   bar: "bg-blue-400",   light: "bg-blue-50 text-blue-700" },
-  "荷受け業務":        { header: "bg-green-700 text-white",  bar: "bg-green-500",  light: "bg-green-50 text-green-700" },
-  "充填・調理課":      { header: "bg-orange-600 text-white", bar: "bg-orange-400", light: "bg-orange-50 text-orange-700" },
-  "外部・社内活動":    { header: "bg-purple-700 text-white", bar: "bg-purple-400", light: "bg-purple-50 text-purple-700" },
-  "製造管理・荷受け業務": { header: "bg-teal-700 text-white",  bar: "bg-teal-400",   light: "bg-teal-50 text-teal-700" },
-  "人材育成":          { header: "bg-rose-700 text-white",   bar: "bg-rose-400",   light: "bg-rose-50 text-rose-700" },
+  "製造管理":             { header: "bg-blue-700 text-white",   bar: "bg-blue-400",   light: "bg-blue-50 text-blue-700" },
+  "荷受け業務":           { header: "bg-green-700 text-white",  bar: "bg-green-500",  light: "bg-green-50 text-green-700" },
+  "充填・調理課":         { header: "bg-orange-600 text-white", bar: "bg-orange-400", light: "bg-orange-50 text-orange-700" },
+  "外部・社内活動":       { header: "bg-purple-700 text-white", bar: "bg-purple-400", light: "bg-purple-50 text-purple-700" },
+  "製造管理・荷受け業務": { header: "bg-teal-700 text-white",   bar: "bg-teal-400",   light: "bg-teal-50 text-teal-700" },
+  "人材育成":             { header: "bg-rose-700 text-white",   bar: "bg-rose-400",   light: "bg-rose-50 text-rose-700" },
 };
 const FALLBACK_COLORS = [
-  { header: "bg-teal-700 text-white", bar: "bg-teal-400", light: "bg-teal-50 text-teal-700" },
-  { header: "bg-rose-700 text-white", bar: "bg-rose-400", light: "bg-rose-50 text-rose-700" },
+  { header: "bg-teal-700 text-white",   bar: "bg-teal-400",   light: "bg-teal-50 text-teal-700" },
+  { header: "bg-rose-700 text-white",   bar: "bg-rose-400",   light: "bg-rose-50 text-rose-700" },
   { header: "bg-indigo-700 text-white", bar: "bg-indigo-400", light: "bg-indigo-50 text-indigo-700" },
-  { header: "bg-amber-700 text-white", bar: "bg-amber-400", light: "bg-amber-50 text-amber-700" },
+  { header: "bg-amber-700 text-white",  bar: "bg-amber-400",  light: "bg-amber-50 text-amber-700" },
 ];
+const PRIORITY_COLORS: Record<Priority, string> = { "◎": "bg-red-100 text-red-600", "○": "bg-yellow-100 text-yellow-700", "△": "bg-gray-100 text-gray-500" };
 
 function getCatColors(cat: string, allCats: string[]) {
   if (DEFAULT_CAT_COLORS[cat]) return DEFAULT_CAT_COLORS[cat];
@@ -43,7 +44,7 @@ export default function GanttPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState<GanttTask | null>(null);
-  const [form, setForm] = useState<Omit<GanttTask, "id">>(makeEmptyTask("A. 製造管理業務"));
+  const [form, setForm] = useState<Omit<GanttTask, "id">>(makeEmptyTask("製造管理"));
   const [showDelete, setShowDelete] = useState<string | null>(null);
   const [showCatEditor, setShowCatEditor] = useState(false);
   const [newCatName, setNewCatName] = useState("");
@@ -55,7 +56,7 @@ export default function GanttPage() {
   useEffect(() => { reload(); }, []);
 
   function openAdd() {
-    setForm(makeEmptyTask(categories[0] ?? "A. 製造管理業務"));
+    setForm(makeEmptyTask(categories[0] ?? "製造管理"));
     setEditingTask(null);
     setShowForm(true);
   }
@@ -75,7 +76,6 @@ export default function GanttPage() {
 
   function handleDelete(id: string) { deleteGanttTask(id); reload(); setShowDelete(null); }
 
-  // Period helpers
   function addPeriod() {
     setForm((f) => ({ ...f, periods: [...f.periods, { startWeek: 1, endWeek: 4 }] }));
   }
@@ -89,7 +89,6 @@ export default function GanttPage() {
     }));
   }
 
-  // Category editing
   function addCategory() {
     const name = newCatName.trim();
     if (!name || categories.includes(name)) return;
@@ -104,7 +103,6 @@ export default function GanttPage() {
     setCategories(updated);
   }
 
-  // 現在週
   const now = new Date();
   const april1 = new Date(2026, 3, 1);
   const currentWeek = Math.max(1, Math.min(TOTAL_WEEKS, Math.ceil((now.getTime() - april1.getTime()) / (7 * 86400000))));
@@ -127,7 +125,6 @@ export default function GanttPage() {
       {/* 横スクロール ガントチャート */}
       <div className="overflow-x-auto">
         <div style={{ minWidth: "700px" }}>
-          {/* 月ヘッダー */}
           <div className="sticky top-[68px] z-20 bg-white border-b border-gray-200">
             <div className="flex">
               <div className="w-40 shrink-0 border-r border-gray-200" />
@@ -154,7 +151,6 @@ export default function GanttPage() {
             </div>
           </div>
 
-          {/* カテゴリ別タスク */}
           {categories.map((category) => {
             const catTasks = tasks.filter((t) => t.category === category);
             if (catTasks.length === 0) return null;
@@ -175,7 +171,7 @@ export default function GanttPage() {
                   <div key={task.id} className="flex items-center border-b border-gray-50 hover:bg-gray-50 group">
                     <div className="w-40 shrink-0 px-2 py-2 border-r border-gray-100 flex items-start justify-between">
                       <div className="min-w-0">
-                        <p className="text-[11px] text-gray-700 leading-tight font-medium truncate" title={task.taskName}>{task.no} {task.taskName}</p>
+                        <p className="text-[11px] text-gray-700 leading-tight font-medium truncate" title={task.taskName}>{task.taskName}</p>
                         {task.deadline && <p className="text-[9px] text-gray-400 truncate">{task.deadline}</p>}
                       </div>
                       <div className="hidden group-hover:flex gap-0.5 shrink-0 ml-1">
@@ -205,7 +201,7 @@ export default function GanttPage() {
         </div>
       </div>
 
-      {/* タスク一覧（スマホ向け補完） */}
+      {/* タスク一覧 */}
       <div className="px-4 py-4 space-y-2">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-bold text-gray-600">タスク一覧</h2>
@@ -213,18 +209,19 @@ export default function GanttPage() {
         </div>
         {tasks.map((task) => {
           const cc = getCatColors(task.category, categories);
-          const periodsLabel = task.periods?.map((p) => `W${p.startWeek}〜W${p.endWeek}`).join(", ") ?? "";
+          const periodsLabel = task.periods?.map((p) => `W${p.startWeek}〜W${p.endWeek}`).join(" / ") ?? "";
           return (
             <div key={task.id} className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm active:bg-gray-50" onClick={() => openEdit(task)}>
               <div className="flex items-start gap-2">
-                <span className="text-xs font-bold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded shrink-0">{task.no}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800">{task.taskName}</p>
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full shrink-0 ${PRIORITY_COLORS[task.priority]}`}>{task.priority}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${cc?.light ?? "bg-gray-100 text-gray-600"}`}>{task.category}</span>
-                    {task.deadline && <span className="text-xs text-gray-400">期限: {task.deadline}</span>}
-                    <span className="text-xs text-gray-400">{periodsLabel}</span>
+                    {periodsLabel && <span className="text-xs text-gray-400">{periodsLabel}</span>}
                   </div>
+                  <p className="text-sm font-medium text-gray-800">{task.taskName}</p>
+                  {task.specificApproach && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{task.specificApproach}</p>}
+                  {task.deadline && <p className="text-xs text-gray-400 mt-1">期限: {task.deadline}</p>}
                 </div>
                 <button onClick={(e) => { e.stopPropagation(); setShowDelete(task.id); }} className="text-red-300 text-sm p-1 shrink-0">🗑</button>
               </div>
@@ -278,17 +275,17 @@ export default function GanttPage() {
       {/* 追加・編集フォーム */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-t-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-t-3xl w-full max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
               <h3 className="font-bold text-gray-900">📅 {editingTask ? "タスクを編集" : "タスクを追加"}</h3>
               <button onClick={() => setShowForm(false)} className="text-gray-400 text-xl p-1">✕</button>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="p-4 space-y-3 pb-10">
               <div className="grid grid-cols-2 gap-3">
-                <F label="番号（A1など）"><input value={form.no} onChange={(e) => setForm({ ...form, no: e.target.value })} className={ic} placeholder="例: A1" /></F>
+                <F label="番号（任意）"><input value={form.no} onChange={(e) => setForm({ ...form, no: e.target.value })} className={ic} placeholder="例: 1" /></F>
                 <F label="優先度">
                   <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value as Priority })} className={ic}>
-                    <option value="◎">◎</option><option value="○">○</option><option value="△">△</option>
+                    <option value="◎">◎ 最優先</option><option value="○">○ 通常</option><option value="△">△ 低</option>
                   </select>
                 </F>
               </div>
@@ -301,7 +298,6 @@ export default function GanttPage() {
               <F label="具体的取り組み"><textarea value={form.specificApproach} onChange={(e) => setForm({ ...form, specificApproach: e.target.value })} className={ic} rows={2} placeholder="例: OJT研修：日次→週次→月次" /></F>
               <F label="期限"><input value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} className={ic} placeholder="例: 7月末" /></F>
 
-              {/* 期間（複数設定可） */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm font-medium text-gray-700">期間（W1=4月第1週〜W20=8月第4週）</label>
@@ -329,7 +325,10 @@ export default function GanttPage() {
                 </div>
               </div>
 
-              <button onClick={handleSave} disabled={!form.taskName.trim()} className="w-full bg-purple-600 disabled:bg-gray-300 text-white font-bold py-4 rounded-2xl">
+              <button
+                onClick={handleSave}
+                className={`w-full font-bold py-4 rounded-2xl text-white ${form.taskName.trim() ? "bg-purple-600 active:bg-purple-700" : "bg-gray-300"}`}
+              >
                 {editingTask ? "更新する" : "追加する"}
               </button>
             </div>

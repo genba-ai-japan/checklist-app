@@ -86,33 +86,49 @@ export default function LoginGuard({ children }: { children: React.ReactNode }) 
   // ── アカウント選択画面 ──────────────────────────────────────────────────────
   if (screen === "account_list") {
     return (
-      <div className="fixed inset-0 bg-blue-700 flex flex-col items-center justify-center z-[100] px-6">
-        <div className="text-center mb-8">
+      <div className="fixed inset-0 bg-blue-700 flex flex-col z-[100]">
+        {/* ヘッダー */}
+        <div className="flex flex-col items-center pt-16 pb-8 px-6">
           <p className="text-5xl mb-3">🏭</p>
           <h1 className="text-2xl font-bold text-white">業務ダッシュボード</h1>
           <p className="text-blue-200 text-sm mt-1">2026年度</p>
         </div>
-        <div className="w-full max-w-sm space-y-3 mb-6">
-          {accounts.map((acc) => (
-            <button
-              key={acc.id}
-              onClick={() => { setSelectedAccount(acc); setPin(""); setPinError(false); setScreen("pin_entry"); }}
-              className="w-full bg-white/20 active:bg-white/30 rounded-2xl p-4 flex items-center gap-4 text-left"
-            >
-              <span className="text-3xl">{acc.avatar}</span>
-              <div>
-                <p className="font-bold text-white text-lg">{acc.username}</p>
-                <p className="text-blue-200 text-xs">タップしてログイン</p>
-              </div>
-            </button>
-          ))}
+
+        {/* ログインセクション */}
+        <div className="flex-1 overflow-y-auto px-6">
+          <p className="text-blue-200 text-xs font-medium uppercase tracking-widest mb-3">ログイン</p>
+          <div className="space-y-3">
+            {accounts.map((acc) => (
+              <button
+                key={acc.id}
+                onClick={() => { setSelectedAccount(acc); setPin(""); setPinError(false); setScreen("pin_entry"); }}
+                className="w-full bg-white/20 active:bg-white/30 rounded-2xl p-4 flex items-center gap-4 text-left"
+              >
+                <span className="text-3xl">{acc.avatar}</span>
+                <div className="flex-1">
+                  <p className="font-bold text-white text-lg">{acc.username}</p>
+                  <p className="text-blue-200 text-xs">タップしてPIN入力</p>
+                </div>
+                <span className="text-blue-200 text-lg">›</span>
+              </button>
+            ))}
+          </div>
+
+          {/* 区切り */}
+          <div className="flex items-center gap-3 my-6">
+            <div className="flex-1 h-px bg-white/20" />
+            <span className="text-blue-300 text-xs">または</span>
+            <div className="flex-1 h-px bg-white/20" />
+          </div>
+
+          {/* 新規登録 */}
+          <button
+            onClick={() => setScreen("create_account")}
+            className="w-full bg-white text-blue-700 font-bold py-4 rounded-2xl text-base active:bg-blue-50 mb-8"
+          >
+            ＋ 新規登録
+          </button>
         </div>
-        <button
-          onClick={() => setScreen("create_account")}
-          className="text-blue-200 text-sm underline"
-        >
-          ＋ 新しいアカウントを作成
-        </button>
       </div>
     );
   }
@@ -226,7 +242,7 @@ function CreateAccountScreen({
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="例: 西本"
+              placeholder="例: 田中"
               className="w-full bg-white/20 text-white placeholder-white/40 rounded-2xl px-4 py-4 text-lg text-center focus:outline-none focus:ring-2 focus:ring-white/50"
               autoFocus
               maxLength={20}
