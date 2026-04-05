@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { loadGoals, addGoal, updateGoal, deleteGoal, loadGoalCategories, saveGoalCategories } from "@/lib/dashboard-storage";
+import { loadGoals, addGoal, updateGoal, deleteGoal, loadCategories, saveCategories } from "@/lib/dashboard-storage";
 import { Goal, GoalStatus, Priority } from "@/types";
 
 const STATUS_LABELS: Record<GoalStatus, string> = { not_started: "未着手", in_progress: "進行中", completed: "完了" };
@@ -24,7 +24,7 @@ export default function GoalsPage() {
 
   function reload() {
     setGoals(loadGoals());
-    const cats = loadGoalCategories();
+    const cats = loadCategories();
     setCategories(cats);
   }
   useEffect(() => { reload(); }, []);
@@ -67,14 +67,14 @@ export default function GoalsPage() {
     const name = newCatName.trim();
     if (!name || categories.includes(name)) return;
     const updated = [...categories, name];
-    saveGoalCategories(updated);
+    saveCategories(updated);
     setCategories(updated);
     setNewCatName("");
   }
 
   function deleteCategory(cat: string) {
     const updated = categories.filter((c) => c !== cat);
-    saveGoalCategories(updated);
+    saveCategories(updated);
     setCategories(updated);
     if (filter === cat) setFilter("すべて");
   }
@@ -163,8 +163,8 @@ export default function GoalsPage() {
                   onKeyDown={(e) => { if (e.key === "Enter") addCategory(); }}
                   placeholder="新しいカテゴリ名"
                   className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                <button onClick={addCategory} disabled={!newCatName.trim()}
-                  className="bg-blue-600 disabled:bg-gray-300 text-white font-bold px-4 py-2.5 rounded-xl text-sm">追加</button>
+                <button onClick={addCategory}
+                  className={`font-bold px-4 py-2.5 rounded-xl text-sm ${newCatName.trim() ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-400"}`}>追加</button>
               </div>
             </div>
           </div>

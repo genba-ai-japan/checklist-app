@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   loadGanttTasks, addGanttTask, updateGanttTask, deleteGanttTask,
-  loadGanttCategories, saveGanttCategories,
+  loadCategories, saveCategories,
 } from "@/lib/dashboard-storage";
 import { GanttTask, GanttPeriod, Priority } from "@/types";
 
@@ -14,10 +14,12 @@ const MONTH_HEADERS = [
 ];
 
 const DEFAULT_CAT_COLORS: Record<string, { header: string; bar: string; light: string }> = {
-  "A. 製造管理業務": { header: "bg-blue-700 text-white", bar: "bg-blue-400", light: "bg-blue-50 text-blue-700" },
-  "B. 荷受け業務":  { header: "bg-green-700 text-white", bar: "bg-green-500", light: "bg-green-50 text-green-700" },
-  "C. 充填・調理課": { header: "bg-orange-600 text-white", bar: "bg-orange-400", light: "bg-orange-50 text-orange-700" },
-  "D. 外部・社内活動": { header: "bg-purple-700 text-white", bar: "bg-purple-400", light: "bg-purple-50 text-purple-700" },
+  "製造管理":          { header: "bg-blue-700 text-white",   bar: "bg-blue-400",   light: "bg-blue-50 text-blue-700" },
+  "荷受け業務":        { header: "bg-green-700 text-white",  bar: "bg-green-500",  light: "bg-green-50 text-green-700" },
+  "充填・調理課":      { header: "bg-orange-600 text-white", bar: "bg-orange-400", light: "bg-orange-50 text-orange-700" },
+  "外部・社内活動":    { header: "bg-purple-700 text-white", bar: "bg-purple-400", light: "bg-purple-50 text-purple-700" },
+  "製造管理・荷受け業務": { header: "bg-teal-700 text-white",  bar: "bg-teal-400",   light: "bg-teal-50 text-teal-700" },
+  "人材育成":          { header: "bg-rose-700 text-white",   bar: "bg-rose-400",   light: "bg-rose-50 text-rose-700" },
 };
 const FALLBACK_COLORS = [
   { header: "bg-teal-700 text-white", bar: "bg-teal-400", light: "bg-teal-50 text-teal-700" },
@@ -48,7 +50,7 @@ export default function GanttPage() {
 
   function reload() {
     setTasks(loadGanttTasks());
-    setCategories(loadGanttCategories());
+    setCategories(loadCategories());
   }
   useEffect(() => { reload(); }, []);
 
@@ -92,13 +94,13 @@ export default function GanttPage() {
     const name = newCatName.trim();
     if (!name || categories.includes(name)) return;
     const updated = [...categories, name];
-    saveGanttCategories(updated);
+    saveCategories(updated);
     setCategories(updated);
     setNewCatName("");
   }
   function deleteCategory(cat: string) {
     const updated = categories.filter((c) => c !== cat);
-    saveGanttCategories(updated);
+    saveCategories(updated);
     setCategories(updated);
   }
 
@@ -219,7 +221,7 @@ export default function GanttPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-800">{task.taskName}</p>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${cc?.light ?? "bg-gray-100 text-gray-600"}`}>{task.category.replace(/^[A-Z]\. /, "")}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${cc?.light ?? "bg-gray-100 text-gray-600"}`}>{task.category}</span>
                     {task.deadline && <span className="text-xs text-gray-400">期限: {task.deadline}</span>}
                     <span className="text-xs text-gray-400">{periodsLabel}</span>
                   </div>
@@ -251,8 +253,8 @@ export default function GanttPage() {
                   onKeyDown={(e) => { if (e.key === "Enter") addCategory(); }}
                   placeholder="新しいカテゴリ名"
                   className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-400" />
-                <button onClick={addCategory} disabled={!newCatName.trim()}
-                  className="bg-purple-600 disabled:bg-gray-300 text-white font-bold px-4 py-2.5 rounded-xl text-sm">追加</button>
+                <button onClick={addCategory}
+                  className={`font-bold px-4 py-2.5 rounded-xl text-sm ${newCatName.trim() ? "bg-purple-600 text-white" : "bg-gray-200 text-gray-400"}`}>追加</button>
               </div>
             </div>
           </div>

@@ -229,7 +229,7 @@ export function importGantt(text: string): { count: number; errors: string[] } {
       id: crypto.randomUUID(),
       no: row[header.indexOf("番号")] ?? "",
       priority: (row[header.indexOf("優先")] as GanttTask["priority"]) || "○",
-      category: row[header.indexOf("カテゴリ")] ?? "A. 製造管理業務",
+      category: row[header.indexOf("カテゴリ")] ?? "製造管理",
       taskName: name,
       specificApproach: row[header.indexOf("具体的取り組み")] ?? "",
       deadline: row[header.indexOf("期限")] ?? "",
