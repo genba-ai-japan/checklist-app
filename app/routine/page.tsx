@@ -184,7 +184,7 @@ export default function RoutinePage() {
               <h3 className="font-bold text-gray-900">{editingItem ? "ルーティンを編集" : "ルーティンを追加"}</h3>
               <button onClick={() => setShowForm(false)} className="text-gray-400 text-xl p-1">✕</button>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="p-4 space-y-3 pb-10">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">頻度・タイミング</label>
                 <select value={form.frequency} onChange={(e) => setForm({ ...form, frequency: e.target.value })} className={ic}>
@@ -203,7 +203,8 @@ export default function RoutinePage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">コメント</label>
                 <input value={form.comment} onChange={(e) => setForm({ ...form, comment: e.target.value })} placeholder="メモ" className={ic} />
               </div>
-              <button onClick={handleSave} disabled={!form.task.trim()} className="w-full bg-lime-600 disabled:bg-gray-300 text-white font-bold py-4 rounded-2xl">
+              <button onClick={handleSave}
+                className={`w-full font-bold py-4 rounded-2xl text-white ${form.task.trim() ? "bg-lime-600 active:bg-lime-700" : "bg-gray-300"}`}>
                 {editingItem ? "更新する" : "追加する"}
               </button>
             </div>

@@ -235,7 +235,7 @@ export default function GoalsPage() {
               <h3 className="font-bold text-gray-900">{editingGoal ? "目標を編集" : "目標を追加"}</h3>
               <button onClick={() => setShowForm(false)} className="text-gray-400 text-xl p-1">✕</button>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="p-4 space-y-3 pb-10">
               <div className="grid grid-cols-2 gap-3">
                 <F label="優先度">
                   <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value as Priority })} className={ic}>
@@ -263,7 +263,8 @@ export default function GoalsPage() {
                 <F label="KPI・指標"><input value={form.kpi} onChange={(e) => setForm({ ...form, kpi: e.target.value })} placeholder="例: 独立対応率100%" className={ic} /></F>
                 <F label="期限"><input value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} placeholder="例: 7月末" className={ic} /></F>
               </div>
-              <button onClick={handleSave} disabled={!form.objective.trim()} className="w-full bg-blue-600 disabled:bg-gray-300 text-white font-bold py-4 rounded-2xl">
+              <button onClick={handleSave}
+                className={`w-full font-bold py-4 rounded-2xl text-white ${form.objective.trim() ? "bg-blue-600 active:bg-blue-700" : "bg-gray-300"}`}>
                 {editingGoal ? "更新する" : "追加する"}
               </button>
             </div>

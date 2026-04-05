@@ -194,68 +194,65 @@ export default function GanttPage() {
           </div>
 
           {/* カテゴリ別タスク行 */}
+              {/* カテゴリ別タスク行 */}
           {categories.map((category) => {
             const catTasks = tasks.filter((t) => t.category === category);
             if (catTasks.length === 0) return null;
             const cc = getCatColors(category, categories);
             return (
               <div key={category}>
-                {/* カテゴリヘッダー行 */}
-                <div className={`flex items-center ${cc.header}`}>
-                  <div className="w-52 shrink-0 px-3 py-1.5 border-r border-white/20">
-                    <span className="text-xs font-bold">{category}</span>
-                  </div>
-                  <div className="flex flex-1">
-                    {Array.from({ length: TOTAL_WEEKS }, (_, i) => i + 1).map((w) => (
-                      <div key={w} className={`flex-1 py-1.5 border-l border-white/10 ${w === currentWeek ? "bg-yellow-400/30" : ""}`} />
-                    ))}
-                  </div>
-                </div>
-                {/* タスク行 */}
-                {catTasks.map((task) => {
+                {/* タスク行（カテゴリラベルは先頭タスクの左カラムに埋め込み） */}
+                {catTasks.map((task, taskIdx) => {
                   const periodsLabel = task.periods?.map((p) => `W${p.startWeek}〜${p.endWeek}`).join(" / ") ?? "";
                   return (
                     <div key={task.id} className="flex border-b border-gray-100 hover:bg-gray-50">
                       {/* 左：タスク情報 */}
-                      <div className="w-52 shrink-0 px-2 pt-1.5 pb-2 border-r border-gray-100">
-                        {/* ツールバー */}
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex gap-0.5">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); moveTask(task.id, "up", category); }}
-                              className="text-gray-300 hover:text-gray-700 active:text-gray-700 text-[11px] px-1 py-0.5 rounded hover:bg-gray-100"
-                            >▲</button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); moveTask(task.id, "down", category); }}
-                              className="text-gray-300 hover:text-gray-700 active:text-gray-700 text-[11px] px-1 py-0.5 rounded hover:bg-gray-100"
-                            >▼</button>
+                      <div className="w-52 shrink-0 border-r border-gray-100">
+                        {/* カテゴリラベル（先頭タスクのみ） */}
+                        {taskIdx === 0 && (
+                          <div className={`px-3 py-1 ${cc.header}`}>
+                            <span className="text-xs font-bold">{category}</span>
                           </div>
-                          <div className="flex gap-0.5">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); openEdit(task); }}
-                              className="text-blue-400 hover:text-blue-600 active:text-blue-600 text-[11px] px-1 py-0.5 rounded hover:bg-blue-50"
-                            >✏</button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setShowDelete(task.id); }}
-                              className="text-red-300 hover:text-red-500 active:text-red-500 text-[11px] px-1 py-0.5 rounded hover:bg-red-50"
-                            >✕</button>
-                          </div>
-                        </div>
-                        {/* 優先度・カテゴリ */}
-                        <div className="flex items-center gap-1 flex-wrap mb-0.5">
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${PRIORITY_COLORS[task.priority]}`}>{task.priority}</span>
-                          <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${cc.light}`}>{task.category}</span>
-                        </div>
-                        {/* タスク名 */}
-                        <p className="text-[11px] text-gray-800 font-medium leading-tight line-clamp-2 mb-0.5">{task.taskName}</p>
-                        {/* 具体的取り組み */}
-                        {task.specificApproach && (
-                          <p className="text-[9px] text-gray-500 leading-tight line-clamp-2 mb-0.5">{task.specificApproach}</p>
                         )}
-                        {/* 期限・期間 */}
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {task.deadline && <p className="text-[9px] text-blue-500 font-medium">{task.deadline}</p>}
-                          {periodsLabel && <p className="text-[9px] text-gray-400">{periodsLabel}</p>}
+                        <div className="px-2 pt-1 pb-2">
+                          {/* ツールバー */}
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex gap-0.5">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); moveTask(task.id, "up", category); }}
+                                className="text-gray-300 hover:text-gray-700 active:text-gray-700 text-[11px] px-1 py-0.5 rounded hover:bg-gray-100"
+                              >▲</button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); moveTask(task.id, "down", category); }}
+                                className="text-gray-300 hover:text-gray-700 active:text-gray-700 text-[11px] px-1 py-0.5 rounded hover:bg-gray-100"
+                              >▼</button>
+                            </div>
+                            <div className="flex gap-0.5">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); openEdit(task); }}
+                                className="text-blue-400 hover:text-blue-600 active:text-blue-600 text-[11px] px-1 py-0.5 rounded hover:bg-blue-50"
+                              >✏</button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setShowDelete(task.id); }}
+                                className="text-red-300 hover:text-red-500 active:text-red-500 text-[11px] px-1 py-0.5 rounded hover:bg-red-50"
+                              >✕</button>
+                            </div>
+                          </div>
+                          {/* 優先度 */}
+                          <div className="flex items-center gap-1 flex-wrap mb-0.5">
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${PRIORITY_COLORS[task.priority]}`}>{task.priority}</span>
+                          </div>
+                          {/* タスク名 */}
+                          <p className="text-[11px] text-gray-800 font-medium leading-tight line-clamp-2 mb-0.5">{task.taskName}</p>
+                          {/* 具体的取り組み */}
+                          {task.specificApproach && (
+                            <p className="text-[9px] text-gray-500 leading-tight line-clamp-2 mb-0.5">{task.specificApproach}</p>
+                          )}
+                          {/* 期限・期間 */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {task.deadline && <p className="text-[9px] text-blue-500 font-medium">{task.deadline}</p>}
+                            {periodsLabel && <p className="text-[9px] text-gray-400">{periodsLabel}</p>}
+                          </div>
                         </div>
                       </div>
                       {/* 右：ガントバー */}
@@ -338,18 +335,17 @@ export default function GanttPage() {
             </div>
             <div className="p-4 space-y-3 pb-10">
               <div className="grid grid-cols-2 gap-3">
-                <F label="番号（任意）"><input value={form.no} onChange={(e) => setForm({ ...form, no: e.target.value })} className={ic} placeholder="例: 1" /></F>
                 <F label="優先度">
                   <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value as Priority })} className={ic}>
                     <option value="◎">◎ 最優先</option><option value="○">○ 通常</option><option value="△">△ 低</option>
                   </select>
                 </F>
+                <F label="カテゴリ">
+                  <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={ic}>
+                    {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </F>
               </div>
-              <F label="カテゴリ">
-                <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={ic}>
-                  {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </F>
               <F label="タスク名" required><input value={form.taskName} onChange={(e) => setForm({ ...form, taskName: e.target.value })} className={ic} placeholder="例: 業務フロー完全習得" /></F>
               <F label="具体的取り組み"><textarea value={form.specificApproach} onChange={(e) => setForm({ ...form, specificApproach: e.target.value })} className={ic} rows={2} placeholder="例: OJT研修：日次→週次→月次" /></F>
               <F label="期限"><input value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} className={ic} placeholder="例: 7月末" /></F>

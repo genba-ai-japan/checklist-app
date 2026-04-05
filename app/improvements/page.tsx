@@ -211,7 +211,7 @@ export default function ImprovementsPage() {
               <h3 className="font-bold text-gray-900">💡 {editingItem ? "改善案を編集" : "改善案を追加"}</h3>
               <button onClick={() => setShowForm(false)} className="text-gray-400 text-xl p-1">✕</button>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="p-4 space-y-3 pb-10">
               <F label="提案日（月/週）"><input value={form.proposalDate} onChange={(e) => setForm({ ...form, proposalDate: e.target.value })} className={ic} placeholder="例: 4月 W1" /></F>
               <F label="問題・課題" required><input value={form.problem} onChange={(e) => setForm({ ...form, problem: e.target.value })} className={ic} placeholder="例: フィルムの価格高騰" /></F>
               <F label="改善内容" required><input value={form.improvementContent} onChange={(e) => setForm({ ...form, improvementContent: e.target.value })} className={ic} placeholder="例: 切り替え枚数削減" /></F>
@@ -231,8 +231,8 @@ export default function ImprovementsPage() {
                   <textarea value={form.effectConfirmation} onChange={(e) => setForm({ ...form, effectConfirmation: e.target.value })} className={ic} rows={2} placeholder="効果の確認結果" />
                 </F>
               )}
-              <button onClick={handleSave} disabled={!form.problem || !form.improvementContent}
-                className="w-full bg-yellow-600 disabled:bg-gray-300 text-white font-bold py-4 rounded-2xl text-base">
+              <button onClick={handleSave}
+                className={`w-full font-bold py-4 rounded-2xl text-white text-base ${(form.problem && form.improvementContent) ? "bg-yellow-600 active:bg-yellow-700" : "bg-gray-300"}`}>
                 {editingItem ? "更新する" : "追加する"}
               </button>
             </div>
