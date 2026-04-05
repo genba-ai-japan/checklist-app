@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { loadImprovements, addImprovement, updateImprovement, deleteImprovement } from "@/lib/dashboard-storage";
+import { exportImprovements, importImprovements } from "@/lib/export-import";
+import ExportImportBar from "@/components/ExportImportBar";
 import { ImprovementItem, ImprovementStatus } from "@/types";
 
 const STATUS_OPTIONS: ImprovementStatus[] = ["未着手", "進行中", "完了"];
@@ -108,6 +110,7 @@ export default function ImprovementsPage() {
           </div>
         </div>
       </header>
+      <ExportImportBar onExport={exportImprovements} onImport={importImprovements} onImported={reload} />
 
       <div className="bg-white border-b border-gray-200 overflow-x-auto">
         <div className="flex gap-2 px-4 py-2 min-w-max">

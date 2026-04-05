@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { loadGoals, addGoal, updateGoal, deleteGoal, loadCategories, saveCategories } from "@/lib/dashboard-storage";
+import { exportGoals, importGoals } from "@/lib/export-import";
+import ExportImportBar from "@/components/ExportImportBar";
 import { Goal, GoalStatus, Priority } from "@/types";
 
 const STATUS_LABELS: Record<GoalStatus, string> = { not_started: "未着手", in_progress: "進行中", completed: "完了" };
@@ -103,6 +105,7 @@ export default function GoalsPage() {
         <p className="text-[10px] text-blue-300 text-right mt-0.5">達成率 {stats.total ? Math.round((stats.done / stats.total) * 100) : 0}%</p>
       </header>
 
+      <ExportImportBar onExport={exportGoals} onImport={importGoals} onImported={reload} />
       <div className="overflow-x-auto bg-white border-b border-gray-200">
         <div className="flex gap-1 px-3 py-2 min-w-max items-center">
           {allCategories.map((cat) => (

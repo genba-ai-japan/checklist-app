@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { loadRoutine, saveRoutine, toggleRoutineCheck, addRoutineItem, updateRoutineItem, deleteRoutineItem } from "@/lib/dashboard-storage";
+import { exportRoutine, importRoutine } from "@/lib/export-import";
+import ExportImportBar from "@/components/ExportImportBar";
 import { RoutineItem } from "@/types";
 
 const FREQ_OPTIONS = ["毎日 午前", "毎日 午後", "1週目", "2週目", "3週目", "4週目", "毎週", "毎月"];
@@ -115,6 +117,7 @@ export default function RoutinePage() {
           </div>
         </div>
       </header>
+      <ExportImportBar onExport={exportRoutine} onImport={importRoutine} onImported={reload} />
 
       <main className="px-4 py-4 space-y-4">
         {Object.entries(grouped).map(([freq, freqItems]) => {

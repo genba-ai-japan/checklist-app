@@ -5,6 +5,8 @@ import {
   loadGanttTasks, addGanttTask, updateGanttTask, deleteGanttTask, saveGanttTasks,
   loadCategories, saveCategories,
 } from "@/lib/dashboard-storage";
+import { exportGantt, importGantt } from "@/lib/export-import";
+import ExportImportBar from "@/components/ExportImportBar";
 import { GanttTask, GanttPeriod, Priority } from "@/types";
 
 const TOTAL_WEEKS = 48;
@@ -161,6 +163,8 @@ export default function GanttPage() {
           </div>
         </div>
       </header>
+
+      <ExportImportBar onExport={exportGantt} onImport={importGantt} onImported={reload} />
 
       {/* 横スクロール ガントチャート */}
       <div className="overflow-x-auto">
