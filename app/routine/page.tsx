@@ -160,10 +160,6 @@ export default function RoutinePage() {
           );
         })}
 
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-          <p className="text-xs font-bold text-amber-700">📌 ガルーンスケジュール登録済み</p>
-          <p className="text-xs text-amber-600 mt-1">週次・月次ルーティンはガルーンスケジュールにも登録されています</p>
-        </div>
       </main>
 
       {/* 削除確認 */}
