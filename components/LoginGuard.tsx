@@ -86,45 +86,45 @@ export default function LoginGuard({ children }: { children: React.ReactNode }) 
   // ── アカウント選択画面 ──────────────────────────────────────────────────────
   if (screen === "account_list") {
     return (
-      <div className="fixed inset-0 bg-blue-700 flex flex-col z-[100]">
+      <div className="fixed inset-0 bg-gray-50 flex flex-col z-[100]">
         {/* ヘッダー */}
         <div className="flex flex-col items-center pt-16 pb-8 px-6">
-          <p className="text-5xl mb-3">🏭</p>
-          <h1 className="text-2xl font-bold text-white">業務ダッシュボード</h1>
-          <p className="text-blue-200 text-sm mt-1">2026年度</p>
+          <div className="w-16 h-16 bg-lime-500 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-md">🏭</div>
+          <h1 className="text-2xl font-bold text-gray-900">業務ダッシュボード</h1>
+          <p className="text-gray-400 text-sm mt-1">2026年度</p>
         </div>
 
         {/* ログインセクション */}
         <div className="flex-1 overflow-y-auto px-6">
-          <p className="text-blue-200 text-xs font-medium uppercase tracking-widest mb-3">ログイン</p>
+          <p className="text-gray-400 text-xs font-medium uppercase tracking-widest mb-3">ログイン</p>
           <div className="space-y-3">
             {accounts.map((acc) => (
               <button
                 key={acc.id}
                 onClick={() => { setSelectedAccount(acc); setPin(""); setPinError(false); setScreen("pin_entry"); }}
-                className="w-full bg-white/20 active:bg-white/30 rounded-2xl p-4 flex items-center gap-4 text-left"
+                className="w-full bg-white border border-gray-200 active:bg-gray-50 rounded-2xl p-4 flex items-center gap-4 text-left shadow-sm"
               >
                 <span className="text-3xl">{acc.avatar}</span>
                 <div className="flex-1">
-                  <p className="font-bold text-white text-lg">{acc.username}</p>
-                  <p className="text-blue-200 text-xs">タップしてPIN入力</p>
+                  <p className="font-bold text-gray-900 text-lg">{acc.username}</p>
+                  <p className="text-gray-400 text-xs">タップしてPIN入力</p>
                 </div>
-                <span className="text-blue-200 text-lg">›</span>
+                <span className="text-gray-300 text-lg">›</span>
               </button>
             ))}
           </div>
 
           {/* 区切り */}
           <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-white/20" />
-            <span className="text-blue-300 text-xs">または</span>
-            <div className="flex-1 h-px bg-white/20" />
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-gray-400 text-xs">または</span>
+            <div className="flex-1 h-px bg-gray-200" />
           </div>
 
           {/* 新規登録 */}
           <button
             onClick={() => setScreen("create_account")}
-            className="w-full bg-white text-blue-700 font-bold py-4 rounded-2xl text-base active:bg-blue-50 mb-8"
+            className="w-full bg-lime-500 text-white font-bold py-4 rounded-2xl text-base active:bg-lime-600 mb-8 shadow-sm"
           >
             ＋ 新規登録
           </button>
@@ -136,25 +136,25 @@ export default function LoginGuard({ children }: { children: React.ReactNode }) 
   // ── PIN入力画面 ──────────────────────────────────────────────────────────────
   if (screen === "pin_entry" && selectedAccount) {
     return (
-      <div className="fixed inset-0 bg-blue-700 flex flex-col items-center justify-center z-[100] select-none">
+      <div className="fixed inset-0 bg-gray-50 flex flex-col items-center justify-center z-[100] select-none">
         <button
           onClick={() => { setScreen("account_list"); setPin(""); setPinError(false); }}
-          className="absolute top-12 left-6 text-blue-200 text-sm"
+          className="absolute top-12 left-6 text-gray-400 text-sm"
         >
           ← 戻る
         </button>
         <div className="text-center mb-8">
           <p className="text-5xl mb-2">{selectedAccount.avatar}</p>
-          <p className="text-xl font-bold text-white">{selectedAccount.username}</p>
-          <p className="text-blue-200 text-sm mt-1">PINを入力してください</p>
+          <p className="text-xl font-bold text-gray-900">{selectedAccount.username}</p>
+          <p className="text-gray-400 text-sm mt-1">PINを入力してください</p>
         </div>
         <div className={`flex gap-5 mb-6 transition-transform duration-100 ${shake ? "scale-110" : ""}`}>
           {[0,1,2,3].map((i) => (
-            <div key={i} className={`w-4 h-4 rounded-full border-2 transition-all ${i < pin.length ? "bg-white border-white" : "bg-transparent border-white/40"}`} />
+            <div key={i} className={`w-4 h-4 rounded-full border-2 transition-all ${i < pin.length ? "bg-gray-800 border-gray-800" : "bg-transparent border-gray-300"}`} />
           ))}
         </div>
-        {pinError && <p className="text-red-300 text-sm mb-4 -mt-2">PINが違います</p>}
-        <Keypad onDigit={pressDigit} onBack={pressBack} />
+        {pinError && <p className="text-red-500 text-sm mb-4 -mt-2">PINが違います</p>}
+        <LightKeypad onDigit={pressDigit} onBack={pressBack} />
       </div>
     );
   }
@@ -172,6 +172,7 @@ export default function LoginGuard({ children }: { children: React.ReactNode }) 
       onBack={accounts.length > 0 ? () => setScreen("account_list") : undefined}
     />;
   }
+
 
   return null;
 }
@@ -224,26 +225,26 @@ function CreateAccountScreen({
   }, [confirmPin]);
 
   return (
-    <div className="fixed inset-0 bg-blue-700 flex flex-col items-center justify-center z-[100] px-6 select-none">
+    <div className="fixed inset-0 bg-gray-50 flex flex-col items-center justify-center z-[100] px-6 select-none">
       {onBack && (
-        <button onClick={onBack} className="absolute top-12 left-6 text-blue-200 text-sm">← 戻る</button>
+        <button onClick={onBack} className="absolute top-12 left-6 text-gray-400 text-sm">← 戻る</button>
       )}
       <div className="text-center mb-8">
-        <p className="text-5xl mb-3">🏭</p>
-        <h1 className="text-2xl font-bold text-white">{isFirst ? "ようこそ！" : "新しいアカウント"}</h1>
-        <p className="text-blue-200 text-sm mt-1">{isFirst ? "まず、アカウントを作成してください" : "アカウントを追加します"}</p>
+        <div className="w-16 h-16 bg-lime-500 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-md">🏭</div>
+        <h1 className="text-2xl font-bold text-gray-900">{isFirst ? "ようこそ！" : "新しいアカウント"}</h1>
+        <p className="text-gray-400 text-sm mt-1">{isFirst ? "まず、アカウントを作成してください" : "アカウントを追加します"}</p>
       </div>
 
       {step === "name" && (
         <div className="w-full max-w-xs space-y-4">
           <div>
-            <label className="block text-lime-300 text-sm mb-2">名前を入力</label>
+            <label className="block text-gray-600 text-sm font-medium mb-2">名前を入力</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="ユーザー名"
-              className="w-full bg-white/20 text-white placeholder-white/40 rounded-2xl px-4 py-4 text-lg text-center focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="w-full bg-white border border-gray-200 text-gray-900 placeholder-gray-300 rounded-2xl px-4 py-4 text-lg text-center focus:outline-none focus:ring-2 focus:ring-lime-400 shadow-sm"
               autoFocus
               maxLength={20}
             />
@@ -251,7 +252,7 @@ function CreateAccountScreen({
           <button
             onClick={() => { if (username.trim()) setStep("pin"); }}
             disabled={!username.trim()}
-            className="w-full bg-white text-blue-700 font-bold py-4 rounded-2xl text-lg disabled:opacity-40"
+            className="w-full bg-lime-500 text-white font-bold py-4 rounded-2xl text-lg disabled:opacity-40 active:bg-lime-600"
           >
             次へ →
           </button>
@@ -260,23 +261,23 @@ function CreateAccountScreen({
 
       {(step === "pin" || step === "confirm") && (
         <>
-          <p className="text-white font-medium mb-6">
+          <p className="text-gray-700 font-medium mb-6">
             {step === "pin" ? "PINを設定（4桁）" : "PINをもう一度入力"}
           </p>
           <div className="flex gap-5 mb-4">
             {[0,1,2,3].map((i) => (
-              <div key={i} className={`w-4 h-4 rounded-full border-2 transition-all ${i < active.length ? "bg-white border-white" : "bg-transparent border-white/40"}`} />
+              <div key={i} className={`w-4 h-4 rounded-full border-2 transition-all ${i < active.length ? "bg-gray-800 border-gray-800" : "bg-transparent border-gray-300"}`} />
             ))}
           </div>
-          {pinError && <p className="text-red-300 text-sm mb-3">{pinError}</p>}
-          <Keypad onDigit={pressDigit} onBack={pressBack} />
+          {pinError && <p className="text-red-500 text-sm mb-3">{pinError}</p>}
+          <LightKeypad onDigit={pressDigit} onBack={pressBack} />
         </>
       )}
     </div>
   );
 }
 
-// ── テンキー共通コンポーネント ────────────────────────────────────────────────────
+// ── テンキー（ダーク背景用・未使用だが互換性のため残す） ──────────────────────────
 function Keypad({ onDigit, onBack }: { onDigit: (d: string) => void; onBack: () => void }) {
   return (
     <div className="grid grid-cols-3 gap-4">
@@ -289,6 +290,28 @@ function Keypad({ onDigit, onBack }: { onDigit: (d: string) => void; onBack: () 
             !key ? "invisible" :
             key === "⌫" ? "bg-white/10 active:bg-white/20" :
             "bg-white/20 active:bg-white/30"
+          }`}
+        >
+          {key}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── テンキー（白背景用） ──────────────────────────────────────────────────────
+function LightKeypad({ onDigit, onBack }: { onDigit: (d: string) => void; onBack: () => void }) {
+  return (
+    <div className="grid grid-cols-3 gap-3">
+      {["1","2","3","4","5","6","7","8","9","","0","⌫"].map((key, idx) => (
+        <button
+          key={idx}
+          onClick={() => { if (key === "⌫") onBack(); else if (key) onDigit(key); }}
+          disabled={!key}
+          className={`w-20 h-20 rounded-full text-2xl font-semibold transition-all active:scale-95 ${
+            !key ? "invisible" :
+            key === "⌫" ? "bg-gray-100 text-gray-500 active:bg-gray-200" :
+            "bg-white text-gray-800 border border-gray-200 shadow-sm active:bg-gray-50"
           }`}
         >
           {key}

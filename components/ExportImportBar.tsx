@@ -42,9 +42,9 @@ export default function ExportImportBar({ onExport, onImport, onImported }: Prop
         >
           📥 取り込み
         </button>
-        <span className="text-[10px] text-gray-400">Excel・スプレッドシート対応</span>
+        <span className="text-[10px] text-gray-400">書き出し: HTMLドキュメント　取り込み: CSV</span>
       </div>
-      <input ref={fileRef} type="file" accept=".csv,.xlsx,text/csv" onChange={handleFile} className="hidden" />
+      <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={handleFile} className="hidden" />
       {result && (
         <div className={`mt-1.5 rounded-lg px-3 py-1.5 text-xs ${result.errors.length > 0 ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700 font-medium"}`}>
           {result.errors.length > 0 ? result.errors.join(" / ") : `✅ ${result.count}件取り込みました`}
