@@ -1,3 +1,15 @@
+export interface MemoItem {
+  id: string;
+  text: string;
+}
+
+export interface MindNode {
+  id: string;
+  text: string;
+  parentId: string | null;
+  color: string;
+}
+
 export interface MachineRecord {
   id: string;
   productName: string;    // 製品名

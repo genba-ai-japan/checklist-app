@@ -1,4 +1,4 @@
-import { Goal, RoutineItem, ImprovementItem, GanttTask, GanttPeriod } from "@/types";
+import { Goal, RoutineItem, ImprovementItem, GanttTask, GanttPeriod, MemoItem, MindNode } from "@/types";
 import { getCurrentAccountId } from "@/lib/session";
 
 function k(base: string) {
@@ -157,6 +157,34 @@ export function deleteGanttTask(id: string): void {
   saveGanttTasks(loadGanttTasks().filter((t) => t.id !== id));
 }
 
+
+// ─── Memos ────────────────────────────────────────────────────────────────────
+const ME = "home_memos_v1";
+export function loadMemos(): MemoItem[] {
+  if (typeof window === "undefined") return [];
+  const raw = localStorage.getItem(k(ME));
+  return raw ? JSON.parse(raw) as MemoItem[] : [];
+}
+export function saveMemos(items: MemoItem[]): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(k(ME), JSON.stringify(items));
+}
+
+// ─── MindMap ──────────────────────────────────────────────────────────────────
+const MM = "mindmap_v1";
+const DEFAULT_MIND: MindNode[] = [
+  { id: "root", text: "マインドマップ", parentId: null, color: "#3b82f6" },
+];
+export function loadMindNodes(): MindNode[] {
+  if (typeof window === "undefined") return DEFAULT_MIND;
+  const raw = localStorage.getItem(k(MM));
+  if (!raw) { localStorage.setItem(k(MM), JSON.stringify(DEFAULT_MIND)); return DEFAULT_MIND; }
+  return JSON.parse(raw) as MindNode[];
+}
+export function saveMindNodes(nodes: MindNode[]): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(k(MM), JSON.stringify(nodes));
+}
 
 // ─── Export All (for CSV) ─────────────────────────────────────────────────────
 export function exportAllData() {

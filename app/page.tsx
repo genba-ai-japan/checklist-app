@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { loadGoals, loadRoutine, loadImprovements } from "@/lib/dashboard-storage";
-import { Goal, RoutineItem, ImprovementItem } from "@/types";
+import { loadGoals, loadRoutine, loadImprovements, loadMemos, saveMemos } from "@/lib/dashboard-storage";
+import { Goal, RoutineItem, ImprovementItem, MemoItem } from "@/types";
 import { useAuth } from "@/lib/auth-context";
 
 function getTodayStr() { return new Date().toISOString().slice(0, 10); }
@@ -29,12 +29,52 @@ export default function DashboardPage() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [routine, setRoutine] = useState<RoutineItem[]>([]);
   const [improvements, setImprovements] = useState<ImprovementItem[]>([]);
+  const [memos, setMemos] = useState<MemoItem[]>([]);
+  const [newMemo, setNewMemo] = useState("");
+  const [editingMemoId, setEditingMemoId] = useState<string | null>(null);
+  const [editingMemoText, setEditingMemoText] = useState("");
+  const memoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setGoals(loadGoals());
     setRoutine(loadRoutine());
     setImprovements(loadImprovements());
+    setMemos(loadMemos());
   }, []);
+
+  function addMemo() {
+    const text = newMemo.trim();
+    if (!text) return;
+    const updated = [...memos, { id: crypto.randomUUID(), text }];
+    setMemos(updated);
+    saveMemos(updated);
+    setNewMemo("");
+    setTimeout(() => memoInputRef.current?.focus(), 50);
+  }
+
+  function deleteMemo(id: string) {
+    const updated = memos.filter((m) => m.id !== id);
+    setMemos(updated);
+    saveMemos(updated);
+  }
+
+  function startEditMemo(m: MemoItem) {
+    setEditingMemoId(m.id);
+    setEditingMemoText(m.text);
+  }
+
+  function commitEditMemo() {
+    if (!editingMemoId) return;
+    const text = editingMemoText.trim();
+    if (!text) { deleteMemo(editingMemoId); }
+    else {
+      const updated = memos.map((m) => m.id === editingMemoId ? { ...m, text } : m);
+      setMemos(updated);
+      saveMemos(updated);
+    }
+    setEditingMemoId(null);
+    setEditingMemoText("");
+  }
 
   const goalDone = goals.filter((g) => g.status === "completed").length;
   const goalInProgress = goals.filter((g) => g.status === "in_progress").length;
@@ -62,6 +102,55 @@ export default function DashboardPage() {
       </header>
 
       <main className="px-4 py-4 space-y-4">
+        {/* メモ欄 */}
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+            <span className="text-base">📝</span>
+            <h2 className="font-bold text-gray-800 flex-1">メモ</h2>
+          </div>
+          <div className="px-4 py-2">
+            {memos.map((m) => (
+              <div key={m.id} className="flex items-center gap-2 py-1.5 border-b border-gray-50 last:border-0">
+                <span className="text-lime-500 text-sm shrink-0">•</span>
+                {editingMemoId === m.id ? (
+                  <input
+                    autoFocus
+                    value={editingMemoText}
+                    onChange={(e) => setEditingMemoText(e.target.value)}
+                    onBlur={commitEditMemo}
+                    onKeyDown={(e) => { if (e.key === "Enter") commitEditMemo(); if (e.key === "Escape") { setEditingMemoId(null); } }}
+                    className="flex-1 text-sm text-gray-800 bg-lime-50 rounded-lg px-2 py-0.5 focus:outline-none"
+                  />
+                ) : (
+                  <span
+                    className="flex-1 text-sm text-gray-800 cursor-pointer"
+                    onClick={() => startEditMemo(m)}
+                  >{m.text}</span>
+                )}
+                <button onClick={() => deleteMemo(m.id)} className="text-gray-300 active:text-red-400 text-xs px-1 shrink-0">✕</button>
+              </div>
+            ))}
+            {memos.length === 0 && (
+              <p className="text-xs text-gray-300 py-2">タップして入力 → 追加できます</p>
+            )}
+            {/* 新規追加行 */}
+            <div className="flex items-center gap-2 pt-2 pb-1">
+              <span className="text-gray-300 text-sm shrink-0">•</span>
+              <input
+                ref={memoInputRef}
+                value={newMemo}
+                onChange={(e) => setNewMemo(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") addMemo(); }}
+                placeholder="メモを追加..."
+                className="flex-1 text-sm text-gray-700 placeholder-gray-300 bg-transparent focus:outline-none"
+              />
+              {newMemo.trim() && (
+                <button onClick={addMemo} className="text-lime-600 font-bold text-xs px-2 py-1 rounded-lg bg-lime-50 active:bg-lime-100 shrink-0">追加</button>
+              )}
+            </div>
+          </div>
+        </section>
+
         <div className="grid grid-cols-2 gap-3">
           <SummaryCard href="/goals" icon="🎯" label="目標管理" value={`${goalInProgress}件 進行中`} sub={`完了 ${goalDone} / 全${goals.length}件`} color="blue" />
           <SummaryCard href="/routine" icon="✅" label="今月のルーティン" value={`${monthRoutineChecked} / ${routine.length} 完了`} sub={`全${routine.length}件のルーティン`} color="lime" />

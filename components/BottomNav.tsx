@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { href: "/goals", label: "目標", icon: "🎯" },
   { href: "/routine", label: "チェック", icon: "✅" },
   { href: "/improvements", label: "改善", icon: "💡" },
+  { href: "/mindmap", label: "マップ", icon: "🧠" },
 ];
 
 export default function BottomNav() {
