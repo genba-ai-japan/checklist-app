@@ -8,6 +8,7 @@ export interface MindNode {
   text: string;
   parentId: string | null;
   color: string;
+  prompt?: string;
 }
 
 export interface MachineRecord {

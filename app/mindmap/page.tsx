@@ -13,7 +13,7 @@ const VSLOT = 56;
 const COLORS = ["#3b82f6","#10b981","#f59e0b","#ef4444","#8b5cf6","#ec4899","#06b6d4","#84cc16","#f97316","#6366f1"];
 
 // ─── フレームワーク定義 ────────────────────────────────────────────────────────
-type TplNode = { key: string; text: string; parentKey: string | null; color: string };
+type TplNode = { key: string; text: string; prompt?: string; parentKey: string | null; color: string };
 
 function buildNodes(tpl: TplNode[]): MindNode[] {
   const keyToId = new Map<string, string>();
@@ -21,6 +21,7 @@ function buildNodes(tpl: TplNode[]): MindNode[] {
   return tpl.map((t) => ({
     id: keyToId.get(t.key)!,
     text: t.text,
+    prompt: t.prompt,
     parentId: t.parentKey ? keyToId.get(t.parentKey)! : null,
     color: t.color,
   }));
@@ -36,160 +37,153 @@ const FRAMEWORKS: Framework[] = [
   {
     id: "mece", name: "MECE", description: "抜け漏れなく・ダブりなく分類する", icon: "🔲", accent: "#3b82f6", example: "例: 製品ラインナップの整理",
     build: (t) => buildNodes([
-      { key:"r", text: t, parentKey: null, color:"#1d4ed8" },
-      { key:"a", text:"カテゴリA", parentKey:"r", color:"#3b82f6" },
-      { key:"a1", text:"項目を入力", parentKey:"a", color:"#60a5fa" },
-      { key:"a2", text:"項目を入力", parentKey:"a", color:"#60a5fa" },
-      { key:"b", text:"カテゴリB", parentKey:"r", color:"#10b981" },
-      { key:"b1", text:"項目を入力", parentKey:"b", color:"#34d399" },
-      { key:"b2", text:"項目を入力", parentKey:"b", color:"#34d399" },
-      { key:"c", text:"カテゴリC", parentKey:"r", color:"#f59e0b" },
-      { key:"c1", text:"項目を入力", parentKey:"c", color:"#fbbf24" },
-      { key:"c2", text:"項目を入力", parentKey:"c", color:"#fbbf24" },
-      { key:"d", text:"カテゴリD", parentKey:"r", color:"#ef4444" },
-      { key:"d1", text:"項目を入力", parentKey:"d", color:"#f87171" },
-      { key:"d2", text:"項目を入力", parentKey:"d", color:"#f87171" },
+      { key:"r",   text: t || "テーマ",          prompt: undefined,  parentKey: null, color:"#1d4ed8" },
+      { key:"a",   text:"コスト削減策",           prompt: "分類①",    parentKey:"r",   color:"#3b82f6" },
+      { key:"a1",  text:"仕入れ価格の交渉",       prompt: "要素①",    parentKey:"a",   color:"#60a5fa" },
+      { key:"a2",  text:"固定費の見直し",         prompt: "要素②",    parentKey:"a",   color:"#60a5fa" },
+      { key:"b",   text:"品質向上策",             prompt: "分類②",    parentKey:"r",   color:"#10b981" },
+      { key:"b1",  text:"検査工程の強化",         prompt: "要素①",    parentKey:"b",   color:"#34d399" },
+      { key:"b2",  text:"スタッフ教育の充実",     prompt: "要素②",    parentKey:"b",   color:"#34d399" },
+      { key:"c",   text:"スピード改善策",         prompt: "分類③",    parentKey:"r",   color:"#f59e0b" },
+      { key:"c1",  text:"業務フローの自動化",     prompt: "要素①",    parentKey:"c",   color:"#fbbf24" },
+      { key:"c2",  text:"ツール導入の検討",       prompt: "要素②",    parentKey:"c",   color:"#fbbf24" },
+      { key:"d",   text:"新規開拓策",             prompt: "分類④",    parentKey:"r",   color:"#ef4444" },
+      { key:"d1",  text:"ターゲット層の再定義",   prompt: "要素①",    parentKey:"d",   color:"#f87171" },
+      { key:"d2",  text:"競合との差別化",         prompt: "要素②",    parentKey:"d",   color:"#f87171" },
     ]),
   },
   {
     id: "swot", name: "SWOT分析", description: "強み・弱み・機会・脅威で現状把握", icon: "⚖️", accent: "#10b981", example: "例: 新規事業参入の検討",
     build: (t) => buildNodes([
-      { key:"r", text: t, parentKey: null, color:"#1d4ed8" },
-      { key:"s", text:"S 強み (Strengths)", parentKey:"r", color:"#16a34a" },
-      { key:"s1", text:"強みを入力", parentKey:"s", color:"#22c55e" },
-      { key:"s2", text:"強みを入力", parentKey:"s", color:"#22c55e" },
-      { key:"w", text:"W 弱み (Weaknesses)", parentKey:"r", color:"#dc2626" },
-      { key:"w1", text:"弱みを入力", parentKey:"w", color:"#f87171" },
-      { key:"w2", text:"弱みを入力", parentKey:"w", color:"#f87171" },
-      { key:"o", text:"O 機会 (Opportunities)", parentKey:"r", color:"#2563eb" },
-      { key:"o1", text:"機会を入力", parentKey:"o", color:"#60a5fa" },
-      { key:"o2", text:"機会を入力", parentKey:"o", color:"#60a5fa" },
-      { key:"th", text:"T 脅威 (Threats)", parentKey:"r", color:"#d97706" },
-      { key:"t1", text:"脅威を入力", parentKey:"th", color:"#fbbf24" },
-      { key:"t2", text:"脅威を入力", parentKey:"th", color:"#fbbf24" },
+      { key:"r",   text: t || "テーマ",           prompt: undefined,   parentKey: null, color:"#1d4ed8" },
+      { key:"s",   text:"独自技術・特許保有",      prompt: "強みは？",   parentKey:"r",   color:"#16a34a" },
+      { key:"s1",  text:"特許取得済みの製造工程",  prompt: "具体例①",   parentKey:"s",   color:"#22c55e" },
+      { key:"s2",  text:"熟練した技術者が揃う",    prompt: "具体例②",   parentKey:"s",   color:"#22c55e" },
+      { key:"w",   text:"資金・リソース不足",      prompt: "弱みは？",   parentKey:"r",   color:"#dc2626" },
+      { key:"w1",  text:"開発予算が限られている",  prompt: "具体例①",   parentKey:"w",   color:"#f87171" },
+      { key:"w2",  text:"認知度がまだ低い",        prompt: "具体例②",   parentKey:"w",   color:"#f87171" },
+      { key:"o",   text:"市場の成長・需要増加",    prompt: "機会は？",   parentKey:"r",   color:"#2563eb" },
+      { key:"o1",  text:"DX推進で需要が拡大",      prompt: "具体例①",   parentKey:"o",   color:"#60a5fa" },
+      { key:"o2",  text:"海外展開のチャンス",      prompt: "具体例②",   parentKey:"o",   color:"#60a5fa" },
+      { key:"th",  text:"競合他社の台頭",          prompt: "脅威は？",   parentKey:"r",   color:"#d97706" },
+      { key:"t1",  text:"大手企業の参入リスク",    prompt: "具体例①",   parentKey:"th",  color:"#fbbf24" },
+      { key:"t2",  text:"原材料価格の高騰",        prompt: "具体例②",   parentKey:"th",  color:"#fbbf24" },
     ]),
   },
   {
     id: "scamper", name: "SCAMPER", description: "7つの視点でアイデアを発想する", icon: "💡", accent: "#f59e0b", example: "例: 既存商品のリニューアル",
     build: (t) => buildNodes([
-      { key:"r", text: t, parentKey: null, color:"#7c3aed" },
-      { key:"s", text:"S 代替（Substitute）", parentKey:"r", color:"#3b82f6" },
-      { key:"s1", text:"別の材料・方法に変えると？", parentKey:"s", color:"#60a5fa" },
-      { key:"c", text:"C 組合せ（Combine）", parentKey:"r", color:"#10b981" },
-      { key:"c1", text:"何かと組み合わせると？", parentKey:"c", color:"#34d399" },
-      { key:"a", text:"A 応用（Adapt）", parentKey:"r", color:"#f59e0b" },
-      { key:"a1", text:"他から応用できる要素は？", parentKey:"a", color:"#fbbf24" },
-      { key:"m", text:"M 修正・拡大（Modify）", parentKey:"r", color:"#ef4444" },
-      { key:"m1", text:"変更・拡大するとどうなる？", parentKey:"m", color:"#f87171" },
-      { key:"p", text:"P 転用（Put to other uses）", parentKey:"r", color:"#8b5cf6" },
-      { key:"p1", text:"他の使い道・用途は？", parentKey:"p", color:"#a78bfa" },
-      { key:"e", text:"E 削除（Eliminate）", parentKey:"r", color:"#ec4899" },
-      { key:"e1", text:"取り除けるものは何か？", parentKey:"e", color:"#f472b6" },
-      { key:"rv", text:"R 逆転（Reverse）", parentKey:"r", color:"#06b6d4" },
-      { key:"r1", text:"逆にするとどうなる？", parentKey:"rv", color:"#22d3ee" },
+      { key:"r",  text: t || "テーマ",              prompt: undefined,     parentKey: null, color:"#7c3aed" },
+      { key:"s",  text:"材料を植物性に変更",        prompt: "S 代替?",     parentKey:"r",   color:"#3b82f6" },
+      { key:"c",  text:"IoT機能を追加統合",         prompt: "C 組合せ?",   parentKey:"r",   color:"#10b981" },
+      { key:"a",  text:"他業界の手法を取り入れる",  prompt: "A 応用?",     parentKey:"r",   color:"#f59e0b" },
+      { key:"m",  text:"サイズを小型化・軽量化",    prompt: "M 修正?",     parentKey:"r",   color:"#ef4444" },
+      { key:"p",  text:"高齢者向けに転用する",      prompt: "P 転用?",     parentKey:"r",   color:"#8b5cf6" },
+      { key:"e",  text:"不要な機能を省いてシンプル化", prompt: "E 削除?",  parentKey:"r",   color:"#ec4899" },
+      { key:"rv", text:"ユーザーが提供側に回る",    prompt: "R 逆転?",     parentKey:"r",   color:"#06b6d4" },
     ]),
   },
   {
     id: "why", name: "WHYツリー", description: "なぜを繰り返して根本原因を追求", icon: "🔍", accent: "#ef4444", example: "例: 不良品が増えている",
     build: (t) => buildNodes([
-      { key:"r", text: t, parentKey: null, color:"#b91c1c" },
-      { key:"w1", text:"なぜ？ 要因①", parentKey:"r", color:"#dc2626" },
-      { key:"w11", text:"さらになぜ？", parentKey:"w1", color:"#f87171" },
-      { key:"w111", text:"さらになぜ？（根本原因）", parentKey:"w11", color:"#fca5a5" },
-      { key:"w12", text:"さらになぜ？", parentKey:"w1", color:"#f87171" },
-      { key:"w121", text:"さらになぜ？（根本原因）", parentKey:"w12", color:"#fca5a5" },
-      { key:"w2", text:"なぜ？ 要因②", parentKey:"r", color:"#dc2626" },
-      { key:"w21", text:"さらになぜ？", parentKey:"w2", color:"#f87171" },
-      { key:"w211", text:"さらになぜ？（根本原因）", parentKey:"w21", color:"#fca5a5" },
-      { key:"w22", text:"さらになぜ？", parentKey:"w2", color:"#f87171" },
-      { key:"w221", text:"さらになぜ？（根本原因）", parentKey:"w22", color:"#fca5a5" },
+      { key:"r",    text: t || "問題・現象",          prompt: undefined,   parentKey: null,  color:"#b91c1c" },
+      { key:"w1",   text:"人手が足りていない",         prompt: "なぜ①？",  parentKey:"r",    color:"#dc2626" },
+      { key:"w11",  text:"採用コストが高い",           prompt: "なぜ？",    parentKey:"w1",   color:"#f87171" },
+      { key:"w111", text:"採用チャネルが限られている", prompt: "根本原因",  parentKey:"w11",  color:"#fca5a5" },
+      { key:"w12",  text:"離職率が高い",               prompt: "なぜ？",    parentKey:"w1",   color:"#f87171" },
+      { key:"w121", text:"評価制度が不透明",           prompt: "根本原因",  parentKey:"w12",  color:"#fca5a5" },
+      { key:"w2",   text:"業務効率が低下している",     prompt: "なぜ②？",  parentKey:"r",    color:"#dc2626" },
+      { key:"w21",  text:"ツールが古く非効率",         prompt: "なぜ？",    parentKey:"w2",   color:"#f87171" },
+      { key:"w211", text:"IT投資が後回しになっている", prompt: "根本原因",  parentKey:"w21",  color:"#fca5a5" },
+      { key:"w22",  text:"手順が標準化されていない",   prompt: "なぜ？",    parentKey:"w2",   color:"#f87171" },
+      { key:"w221", text:"マニュアルが整備されていない", prompt:"根本原因", parentKey:"w22",  color:"#fca5a5" },
     ]),
   },
   {
     id: "how", name: "HOWツリー", description: "どうやってを展開して解決策を導く", icon: "🛠️", accent: "#10b981", example: "例: 売上を改善する",
     build: (t) => buildNodes([
-      { key:"r", text: t, parentKey: null, color:"#15803d" },
-      { key:"h1", text:"どうやって？ 手段①", parentKey:"r", color:"#16a34a" },
-      { key:"h11", text:"具体的アクションを入力", parentKey:"h1", color:"#22c55e" },
-      { key:"h12", text:"具体的アクションを入力", parentKey:"h1", color:"#22c55e" },
-      { key:"h2", text:"どうやって？ 手段②", parentKey:"r", color:"#16a34a" },
-      { key:"h21", text:"具体的アクションを入力", parentKey:"h2", color:"#22c55e" },
-      { key:"h22", text:"具体的アクションを入力", parentKey:"h2", color:"#22c55e" },
-      { key:"h3", text:"どうやって？ 手段③", parentKey:"r", color:"#16a34a" },
-      { key:"h31", text:"具体的アクションを入力", parentKey:"h3", color:"#22c55e" },
-      { key:"h32", text:"具体的アクションを入力", parentKey:"h3", color:"#22c55e" },
+      { key:"r",   text: t || "目標・課題",         prompt: undefined,      parentKey: null, color:"#15803d" },
+      { key:"h1",  text:"営業体制を強化する",       prompt: "どうやって①？", parentKey:"r",   color:"#16a34a" },
+      { key:"h11", text:"訪問件数を週10件に増やす", prompt: "具体的には？",  parentKey:"h1",  color:"#22c55e" },
+      { key:"h12", text:"提案資料を刷新する",       prompt: "具体的には？",  parentKey:"h1",  color:"#22c55e" },
+      { key:"h2",  text:"既存顧客を深耕する",       prompt: "どうやって②？", parentKey:"r",   color:"#16a34a" },
+      { key:"h21", text:"定期フォローコールを実施", prompt: "具体的には？",  parentKey:"h2",  color:"#22c55e" },
+      { key:"h22", text:"アップセル提案を強化",     prompt: "具体的には？",  parentKey:"h2",  color:"#22c55e" },
+      { key:"h3",  text:"新規チャネルを開拓する",   prompt: "どうやって③？", parentKey:"r",   color:"#16a34a" },
+      { key:"h31", text:"SNS広告を活用する",        prompt: "具体的には？",  parentKey:"h3",  color:"#22c55e" },
+      { key:"h32", text:"パートナー企業と連携",     prompt: "具体的には？",  parentKey:"h3",  color:"#22c55e" },
     ]),
   },
   {
     id: "pdca", name: "PDCA", description: "計画→実行→評価→改善のサイクル", icon: "🔄", accent: "#3b82f6", example: "例: 品質改善プロジェクト",
     build: (t) => buildNodes([
-      { key:"r", text: t, parentKey: null, color:"#1d4ed8" },
-      { key:"p", text:"P 計画 Plan", parentKey:"r", color:"#3b82f6" },
-      { key:"p1", text:"目標・ゴール", parentKey:"p", color:"#60a5fa" },
-      { key:"p2", text:"手段・方法", parentKey:"p", color:"#60a5fa" },
-      { key:"p3", text:"スケジュール", parentKey:"p", color:"#60a5fa" },
-      { key:"d", text:"D 実行 Do", parentKey:"r", color:"#16a34a" },
-      { key:"d1", text:"実施内容", parentKey:"d", color:"#22c55e" },
-      { key:"d2", text:"担当者・役割", parentKey:"d", color:"#22c55e" },
-      { key:"c", text:"C 評価 Check", parentKey:"r", color:"#d97706" },
-      { key:"c1", text:"達成度確認", parentKey:"c", color:"#fbbf24" },
-      { key:"c2", text:"課題・問題点", parentKey:"c", color:"#fbbf24" },
-      { key:"a", text:"A 改善 Act", parentKey:"r", color:"#dc2626" },
-      { key:"a1", text:"改善アクション", parentKey:"a", color:"#f87171" },
-      { key:"a2", text:"次のPlanへ反映", parentKey:"a", color:"#f87171" },
+      { key:"r",  text: t || "テーマ",                  prompt: undefined,   parentKey: null, color:"#1d4ed8" },
+      { key:"p",  text:"月次目標と行動計画を策定",       prompt: "P 計画は？", parentKey:"r",   color:"#3b82f6" },
+      { key:"p1", text:"不良率を現状比50%削減",          prompt: "目標は？",  parentKey:"p",   color:"#60a5fa" },
+      { key:"p2", text:"工程チェックを2重化する",        prompt: "手段は？",  parentKey:"p",   color:"#60a5fa" },
+      { key:"p3", text:"4月〜6月の3ヶ月間",             prompt: "期間は？",  parentKey:"p",   color:"#60a5fa" },
+      { key:"d",  text:"計画通りに工程改善を実施",       prompt: "D 実行は？", parentKey:"r",  color:"#16a34a" },
+      { key:"d1", text:"チェックシートを全ライン導入",   prompt: "内容は？",  parentKey:"d",   color:"#22c55e" },
+      { key:"d2", text:"品質管理チーム全員",             prompt: "担当は？",  parentKey:"d",   color:"#22c55e" },
+      { key:"c",  text:"月末に数値を確認・比較",         prompt: "C 評価は？", parentKey:"r",  color:"#d97706" },
+      { key:"c1", text:"目標の80%達成を確認",            prompt: "達成度は？", parentKey:"c",  color:"#fbbf24" },
+      { key:"c2", text:"夜間ラインでミスが多発",         prompt: "課題は？",  parentKey:"c",   color:"#fbbf24" },
+      { key:"a",  text:"夜間ラインの体制を見直す",       prompt: "A 改善は？", parentKey:"r",  color:"#dc2626" },
+      { key:"a1", text:"夜間専任リーダーを配置",         prompt: "改善点は？", parentKey:"a",  color:"#f87171" },
+      { key:"a2", text:"改善策を次月計画に組み込む",     prompt: "次Pへは？", parentKey:"a",   color:"#f87171" },
     ]),
   },
   {
     id: "project", name: "プロジェクトマッピング", description: "プロジェクト全体を俯瞰して整理", icon: "📋", accent: "#8b5cf6", example: "例: 新工場の立ち上げ",
     build: (t) => buildNodes([
-      { key:"r", text: t, parentKey: null, color:"#7c3aed" },
-      { key:"g", text:"目的・目標", parentKey:"r", color:"#8b5cf6" },
-      { key:"g1", text:"達成したいゴールを入力", parentKey:"g", color:"#a78bfa" },
-      { key:"st", text:"ステークホルダー", parentKey:"r", color:"#2563eb" },
-      { key:"st1", text:"関係者を入力", parentKey:"st", color:"#60a5fa" },
-      { key:"sc", text:"スコープ・範囲", parentKey:"r", color:"#16a34a" },
-      { key:"sc1", text:"対象範囲を入力", parentKey:"sc", color:"#22c55e" },
-      { key:"sk", text:"スケジュール", parentKey:"r", color:"#d97706" },
-      { key:"sk1", text:"マイルストーンを入力", parentKey:"sk", color:"#fbbf24" },
-      { key:"rs", text:"リスク・課題", parentKey:"r", color:"#dc2626" },
-      { key:"rs1", text:"想定リスクを入力", parentKey:"rs", color:"#f87171" },
-      { key:"re", text:"リソース・予算", parentKey:"r", color:"#0891b2" },
-      { key:"re1", text:"必要リソースを入力", parentKey:"re", color:"#22d3ee" },
+      { key:"r",   text: t || "プロジェクト名",        prompt: undefined,    parentKey: null, color:"#7c3aed" },
+      { key:"g",   text:"新市場への参入と収益化",      prompt: "目的は？",   parentKey:"r",   color:"#8b5cf6" },
+      { key:"g1",  text:"初年度売上1,000万円達成",     prompt: "ゴールは？", parentKey:"g",   color:"#a78bfa" },
+      { key:"st",  text:"営業・開発・マーケの3部門",   prompt: "誰が関わる？", parentKey:"r", color:"#2563eb" },
+      { key:"st1", text:"各部門から2名ずつ選出",       prompt: "メンバーは？", parentKey:"st", color:"#60a5fa" },
+      { key:"sc",  text:"国内ECサイトの立ち上げ",      prompt: "範囲は？",   parentKey:"r",   color:"#16a34a" },
+      { key:"sc1", text:"20〜40代の個人顧客向け",      prompt: "対象は？",   parentKey:"sc",  color:"#22c55e" },
+      { key:"sk",  text:"6ヶ月でローンチ予定",         prompt: "いつまで？", parentKey:"r",   color:"#d97706" },
+      { key:"sk1", text:"3ヶ月後にβ版リリース",        prompt: "節目は？",   parentKey:"sk",  color:"#fbbf24" },
+      { key:"rs",  text:"競合の先行リスクがある",       prompt: "リスクは？", parentKey:"r",   color:"#dc2626" },
+      { key:"rs1", text:"差別化機能の先行開発",         prompt: "対策は？",   parentKey:"rs",  color:"#f87171" },
+      { key:"re",  text:"予算500万・人員6名",           prompt: "リソースは？", parentKey:"r", color:"#0891b2" },
+      { key:"re1", text:"Q1予算から前倒し確保",         prompt: "確保策は？", parentKey:"re",  color:"#22d3ee" },
     ]),
   },
   {
     id: "system", name: "システムシンキング", description: "要素と関係性でシステム全体を把握", icon: "🕸️", accent: "#06b6d4", example: "例: 生産ラインの効率化",
     build: (t) => buildNodes([
-      { key:"r", text: t, parentKey: null, color:"#0e7490" },
-      { key:"el", text:"構成要素", parentKey:"r", color:"#0891b2" },
-      { key:"el1", text:"要素①を入力", parentKey:"el", color:"#22d3ee" },
-      { key:"el2", text:"要素②を入力", parentKey:"el", color:"#22d3ee" },
-      { key:"el3", text:"要素③を入力", parentKey:"el", color:"#22d3ee" },
-      { key:"rel", text:"相互関係", parentKey:"r", color:"#7c3aed" },
-      { key:"rel1", text:"強化ループ（増幅）", parentKey:"rel", color:"#8b5cf6" },
-      { key:"rel2", text:"均衡ループ（安定）", parentKey:"rel", color:"#a78bfa" },
-      { key:"lev", text:"レバレッジポイント", parentKey:"r", color:"#16a34a" },
-      { key:"lev1", text:"変化を生む介入点を入力", parentKey:"lev", color:"#22c55e" },
-      { key:"ext", text:"外部環境・制約", parentKey:"r", color:"#d97706" },
-      { key:"ext1", text:"外部要因を入力", parentKey:"ext", color:"#fbbf24" },
+      { key:"r",    text: t || "システム・テーマ",       prompt: undefined,     parentKey: null, color:"#0e7490" },
+      { key:"el",   text:"需要・供給・在庫・コスト",     prompt: "構成要素は？", parentKey:"r",   color:"#0891b2" },
+      { key:"el1",  text:"顧客需要の変動パターン",       prompt: "要素①",       parentKey:"el",  color:"#22d3ee" },
+      { key:"el2",  text:"供給能力の上限制約",           prompt: "要素②",       parentKey:"el",  color:"#22d3ee" },
+      { key:"el3",  text:"在庫水準の適正管理",           prompt: "要素③",       parentKey:"el",  color:"#22d3ee" },
+      { key:"rel",  text:"需要増→生産増→コスト増",      prompt: "関係性は？",   parentKey:"r",   color:"#7c3aed" },
+      { key:"rel1", text:"品質向上→口コミ→需要増",      prompt: "強化ループ",   parentKey:"rel", color:"#8b5cf6" },
+      { key:"rel2", text:"価格上昇→需要減→価格下降",    prompt: "均衡ループ",   parentKey:"rel", color:"#a78bfa" },
+      { key:"lev",  text:"需要予測の精度を高める",       prompt: "介入点は？",   parentKey:"r",   color:"#16a34a" },
+      { key:"lev1", text:"AIによる需要予測を導入",       prompt: "具体策は？",   parentKey:"lev", color:"#22c55e" },
+      { key:"ext",  text:"規制・競合・景気の変化",       prompt: "外部要因は？", parentKey:"r",   color:"#d97706" },
+      { key:"ext1", text:"法改正で設備投資が必要",       prompt: "影響は？",     parentKey:"ext", color:"#fbbf24" },
     ]),
   },
   {
     id: "5w1h", name: "5W1H", description: "6つの問いで情報を網羅的に整理", icon: "❓", accent: "#ec4899", example: "例: 新製品の販売計画",
     build: (t) => buildNodes([
-      { key:"r", text: t, parentKey: null, color:"#be185d" },
-      { key:"who", text:"Who  誰が", parentKey:"r", color:"#ec4899" },
-      { key:"who1", text:"関係者・担当者を入力", parentKey:"who", color:"#f472b6" },
-      { key:"what", text:"What  何を", parentKey:"r", color:"#8b5cf6" },
-      { key:"what1", text:"対象・内容を入力", parentKey:"what", color:"#a78bfa" },
-      { key:"when", text:"When  いつ", parentKey:"r", color:"#2563eb" },
-      { key:"when1", text:"日時・期間を入力", parentKey:"when", color:"#60a5fa" },
-      { key:"where", text:"Where  どこで", parentKey:"r", color:"#16a34a" },
-      { key:"where1", text:"場所・範囲を入力", parentKey:"where", color:"#22c55e" },
-      { key:"why", text:"Why  なぜ", parentKey:"r", color:"#dc2626" },
-      { key:"why1", text:"目的・理由を入力", parentKey:"why", color:"#f87171" },
-      { key:"how", text:"How  どのように", parentKey:"r", color:"#d97706" },
-      { key:"how1", text:"手段・方法を入力", parentKey:"how", color:"#fbbf24" },
+      { key:"r",      text: t || "テーマ",              prompt: undefined,      parentKey: null,    color:"#be185d" },
+      { key:"who",    text:"営業部門の全メンバー",       prompt: "Who 誰が？",   parentKey:"r",      color:"#ec4899" },
+      { key:"who1",   text:"チームリーダー3名が主導",    prompt: "詳しくは？",   parentKey:"who",    color:"#f472b6" },
+      { key:"what",   text:"新製品の提案活動を実施",     prompt: "What 何を？",  parentKey:"r",      color:"#8b5cf6" },
+      { key:"what1",  text:"デモ機を使ったプレゼン",     prompt: "詳しくは？",   parentKey:"what",   color:"#a78bfa" },
+      { key:"when",   text:"4月〜6月の四半期内に",       prompt: "When いつ？",  parentKey:"r",      color:"#2563eb" },
+      { key:"when1",  text:"月10件の訪問ペースで",       prompt: "詳しくは？",   parentKey:"when",   color:"#60a5fa" },
+      { key:"where",  text:"関東エリアの既存顧客先",     prompt: "Where どこで？", parentKey:"r",    color:"#16a34a" },
+      { key:"where1", text:"都内・神奈川・埼玉を優先",   prompt: "詳しくは？",   parentKey:"where",  color:"#22c55e" },
+      { key:"why",    text:"売上目標達成のため",         prompt: "Why なぜ？",   parentKey:"r",      color:"#dc2626" },
+      { key:"why1",   text:"前期比120%が今期の目標",     prompt: "詳しくは？",   parentKey:"why",    color:"#f87171" },
+      { key:"how",    text:"訪問販売とオンライン併用",   prompt: "How どのように？", parentKey:"r",  color:"#d97706" },
+      { key:"how1",   text:"Zoom会議で遠方顧客をカバー", prompt: "詳しくは？",   parentKey:"how",    color:"#fbbf24" },
     ]),
   },
 ];
@@ -388,7 +382,7 @@ export default function MindMapPage() {
               const x1 = p.x + NW, y1 = p.y + NH / 2;
               const x2 = c.x, y2 = c.y + NH / 2;
               const lx = (x1 + x2) / 2, ly = (y1 + y2) / 2;
-              const raw = node.text;
+              const raw = node.prompt ?? node.text;
               const label = raw.length > 13 ? raw.slice(0, 12) + "…" : raw;
               const lw = label.length * 6 + 14;
               return (
@@ -541,22 +535,26 @@ export default function MindMapPage() {
       {/* フレームワーク適用：テーマ入力 */}
       {pendingFw && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={() => setPendingFw(null)}>
-          <div className="bg-white rounded-t-3xl w-full overflow-y-auto max-h-[85vh] px-4 pt-4 pb-10" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-3xl">{pendingFw.icon}</span>
-              <div>
-                <h3 className="font-bold text-gray-900">{pendingFw.name}</h3>
-                <p className="text-xs text-gray-400">{pendingFw.description}</p>
+          <div className="bg-white rounded-t-3xl w-full overflow-y-auto flex flex-col"
+            style={{ maxHeight: '85dvh' }}
+            onClick={(e) => e.stopPropagation()}>
+            <div className="px-4 pt-4 pb-2">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">{pendingFw.icon}</span>
+                <div>
+                  <h3 className="font-bold text-gray-900">{pendingFw.name}</h3>
+                  <p className="text-xs text-gray-400">{pendingFw.description}</p>
+                </div>
               </div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">テーマ・タイトルを入力</label>
+              <input autoFocus value={fwTopic} onChange={(e) => setFwTopic(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") applyFramework(); }}
+                placeholder={pendingFw.example}
+                className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              />
+              <p className="text-xs text-gray-400 mt-1.5">空欄のままでも適用できます</p>
             </div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">テーマ・タイトルを入力</label>
-            <input autoFocus value={fwTopic} onChange={(e) => setFwTopic(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") applyFramework(); }}
-              placeholder={pendingFw.example}
-              className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-400"
-            />
-            <p className="text-xs text-gray-400 mt-1.5">空欄のままでも適用できます</p>
-            <div className="flex gap-3 mt-4">
+            <div className="sticky bottom-0 bg-white px-4 pt-3 pb-10 border-t border-gray-100 flex gap-3">
               <button onClick={() => setPendingFw(null)} className="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-2xl text-sm">キャンセル</button>
               <button onClick={applyFramework}
                 className="flex-1 text-white font-bold py-3 rounded-2xl text-sm active:opacity-80"
