@@ -28,12 +28,13 @@ function buildNodes(tpl: TplNode[]): MindNode[] {
 
 interface Framework {
   id: string; name: string; description: string; icon: string; accent: string;
+  example: string;
   build: (topic: string) => MindNode[];
 }
 
 const FRAMEWORKS: Framework[] = [
   {
-    id: "mece", name: "MECE", description: "抜け漏れなく・ダブりなく分類する", icon: "🔲", accent: "#3b82f6",
+    id: "mece", name: "MECE", description: "抜け漏れなく・ダブりなく分類する", icon: "🔲", accent: "#3b82f6", example: "例: 製品ラインナップの整理",
     build: (t) => buildNodes([
       { key:"r", text: t, parentKey: null, color:"#1d4ed8" },
       { key:"a", text:"カテゴリA", parentKey:"r", color:"#3b82f6" },
@@ -51,7 +52,7 @@ const FRAMEWORKS: Framework[] = [
     ]),
   },
   {
-    id: "swot", name: "SWOT分析", description: "強み・弱み・機会・脅威で現状把握", icon: "⚖️", accent: "#10b981",
+    id: "swot", name: "SWOT分析", description: "強み・弱み・機会・脅威で現状把握", icon: "⚖️", accent: "#10b981", example: "例: 新規事業参入の検討",
     build: (t) => buildNodes([
       { key:"r", text: t, parentKey: null, color:"#1d4ed8" },
       { key:"s", text:"S 強み (Strengths)", parentKey:"r", color:"#16a34a" },
@@ -69,7 +70,7 @@ const FRAMEWORKS: Framework[] = [
     ]),
   },
   {
-    id: "scamper", name: "SCAMPER", description: "7つの視点でアイデアを発想する", icon: "💡", accent: "#f59e0b",
+    id: "scamper", name: "SCAMPER", description: "7つの視点でアイデアを発想する", icon: "💡", accent: "#f59e0b", example: "例: 既存商品のリニューアル",
     build: (t) => buildNodes([
       { key:"r", text: t, parentKey: null, color:"#7c3aed" },
       { key:"s", text:"S 代替（Substitute）", parentKey:"r", color:"#3b82f6" },
@@ -89,7 +90,7 @@ const FRAMEWORKS: Framework[] = [
     ]),
   },
   {
-    id: "why", name: "WHYツリー", description: "なぜを繰り返して根本原因を追求", icon: "🔍", accent: "#ef4444",
+    id: "why", name: "WHYツリー", description: "なぜを繰り返して根本原因を追求", icon: "🔍", accent: "#ef4444", example: "例: 不良品が増えている",
     build: (t) => buildNodes([
       { key:"r", text: t, parentKey: null, color:"#b91c1c" },
       { key:"w1", text:"なぜ？ 要因①", parentKey:"r", color:"#dc2626" },
@@ -105,7 +106,7 @@ const FRAMEWORKS: Framework[] = [
     ]),
   },
   {
-    id: "how", name: "HOWツリー", description: "どうやってを展開して解決策を導く", icon: "🛠️", accent: "#10b981",
+    id: "how", name: "HOWツリー", description: "どうやってを展開して解決策を導く", icon: "🛠️", accent: "#10b981", example: "例: 売上を改善する",
     build: (t) => buildNodes([
       { key:"r", text: t, parentKey: null, color:"#15803d" },
       { key:"h1", text:"どうやって？ 手段①", parentKey:"r", color:"#16a34a" },
@@ -120,7 +121,7 @@ const FRAMEWORKS: Framework[] = [
     ]),
   },
   {
-    id: "pdca", name: "PDCA", description: "計画→実行→評価→改善のサイクル", icon: "🔄", accent: "#3b82f6",
+    id: "pdca", name: "PDCA", description: "計画→実行→評価→改善のサイクル", icon: "🔄", accent: "#3b82f6", example: "例: 品質改善プロジェクト",
     build: (t) => buildNodes([
       { key:"r", text: t, parentKey: null, color:"#1d4ed8" },
       { key:"p", text:"P 計画 Plan", parentKey:"r", color:"#3b82f6" },
@@ -139,7 +140,7 @@ const FRAMEWORKS: Framework[] = [
     ]),
   },
   {
-    id: "project", name: "プロジェクトマッピング", description: "プロジェクト全体を俯瞰して整理", icon: "📋", accent: "#8b5cf6",
+    id: "project", name: "プロジェクトマッピング", description: "プロジェクト全体を俯瞰して整理", icon: "📋", accent: "#8b5cf6", example: "例: 新工場の立ち上げ",
     build: (t) => buildNodes([
       { key:"r", text: t, parentKey: null, color:"#7c3aed" },
       { key:"g", text:"目的・目標", parentKey:"r", color:"#8b5cf6" },
@@ -157,7 +158,7 @@ const FRAMEWORKS: Framework[] = [
     ]),
   },
   {
-    id: "system", name: "システムシンキング", description: "要素と関係性でシステム全体を把握", icon: "🕸️", accent: "#06b6d4",
+    id: "system", name: "システムシンキング", description: "要素と関係性でシステム全体を把握", icon: "🕸️", accent: "#06b6d4", example: "例: 生産ラインの効率化",
     build: (t) => buildNodes([
       { key:"r", text: t, parentKey: null, color:"#0e7490" },
       { key:"el", text:"構成要素", parentKey:"r", color:"#0891b2" },
@@ -174,7 +175,7 @@ const FRAMEWORKS: Framework[] = [
     ]),
   },
   {
-    id: "5w1h", name: "5W1H", description: "6つの問いで情報を網羅的に整理", icon: "❓", accent: "#ec4899",
+    id: "5w1h", name: "5W1H", description: "6つの問いで情報を網羅的に整理", icon: "❓", accent: "#ec4899", example: "例: 新製品の販売計画",
     build: (t) => buildNodes([
       { key:"r", text: t, parentKey: null, color:"#be185d" },
       { key:"who", text:"Who  誰が", parentKey:"r", color:"#ec4899" },
@@ -238,6 +239,7 @@ export default function MindMapPage() {
   const [showFwSelect, setShowFwSelect] = useState(false);
   const [pendingFw, setPendingFw] = useState<Framework | null>(null);
   const [fwTopic, setFwTopic] = useState("");
+  const [activeFrameworkId, setActiveFrameworkId] = useState<string | null>(null);
 
   const svgRef = useRef<SVGSVGElement>(null);
   const dragRef = useRef<{ startX: number; startY: number; ox: number; oy: number } | null>(null);
@@ -303,6 +305,7 @@ export default function MindMapPage() {
     if (!pendingFw) return;
     const topic = fwTopic.trim() || pendingFw.name;
     save(pendingFw.build(topic));
+    setActiveFrameworkId(pendingFw.id);
     setPendingFw(null);
     setFwTopic("");
     setSelected(null);
@@ -345,7 +348,12 @@ export default function MindMapPage() {
       <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0 z-10">
         <div>
           <h1 className="text-lg font-bold text-gray-900">🧠 マインドマップ</h1>
-          <p className="text-[10px] text-gray-400 mt-0.5">ドラッグでスクロール　ピンチでズーム</p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            {activeFrameworkId && (() => { const fw = FRAMEWORKS.find(f => f.id === activeFrameworkId); return fw ? (
+              <span className="text-[10px] bg-purple-100 text-purple-700 font-bold px-2 py-0.5 rounded-full">{fw.icon} {fw.name}</span>
+            ) : null; })()}
+            <p className="text-[10px] text-gray-400">ドラッグでスクロール　ピンチでズーム</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <button
@@ -533,7 +541,7 @@ export default function MindMapPage() {
       {/* フレームワーク適用：テーマ入力 */}
       {pendingFw && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={() => setPendingFw(null)}>
-          <div className="bg-white rounded-t-3xl w-full px-4 pt-4 pb-8" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-t-3xl w-full overflow-y-auto max-h-[85vh] px-4 pt-4 pb-10" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <span className="text-3xl">{pendingFw.icon}</span>
               <div>
@@ -544,7 +552,7 @@ export default function MindMapPage() {
             <label className="block text-sm font-medium text-gray-700 mb-2">テーマ・タイトルを入力</label>
             <input autoFocus value={fwTopic} onChange={(e) => setFwTopic(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") applyFramework(); }}
-              placeholder={`例: 新商品開発、${pendingFw.name}分析…`}
+              placeholder={pendingFw.example}
               className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
             <p className="text-xs text-gray-400 mt-1.5">空欄のままでも適用できます</p>
