@@ -244,7 +244,9 @@ export default function GanttPage() {
                           </div>
                           {/* 優先度 */}
                           <div className="flex items-center gap-1 flex-wrap mb-0.5">
-                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${PRIORITY_COLORS[task.priority]}`}>{task.priority}</span>
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${PRIORITY_COLORS[task.priority]}`}>
+                              {({ "◎": "最優先", "○": "通常", "△": "低" } as Record<string, string>)[task.priority] ?? task.priority}
+                            </span>
                           </div>
                           {/* タスク名 */}
                           <p className="text-[11px] text-gray-800 font-medium leading-tight line-clamp-2 mb-0.5">{task.taskName}</p>

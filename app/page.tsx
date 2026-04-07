@@ -44,18 +44,20 @@ export default function DashboardPage() {
   const weekLabel = `${Math.ceil(new Date().getDate() / 7)}週目`;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <header className="bg-lime-600 text-white px-4 py-5">
+    <div className="min-h-screen bg-white pb-20">
+      <header className="bg-white border-b border-gray-100 px-4 pt-12 pb-5">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs text-lime-200 font-medium">2026年度 {username && `· ${username}`}</p>
-            <h1 className="text-2xl font-bold mt-0.5">業務ダッシュボード</h1>
-            <p className="text-sm text-lime-200 mt-1">
-              {new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}　{weekLabel}
+            <p className="text-xs text-gray-400 font-medium tracking-wide">2026年度 業務ダッシュボード</p>
+            <h1 className="text-2xl font-bold text-gray-900 mt-1">
+              {username ? `${username}さん、こんにちは` : "業務ダッシュボード"}
+            </h1>
+            <p className="text-sm text-blue-500 font-medium mt-1">
+              {new Date().toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "short" })}　{weekLabel}
             </p>
           </div>
           <button onClick={openSettings}
-            className="bg-white/20 active:bg-white/30 rounded-full w-10 h-10 flex items-center justify-center text-xl mt-1">
+            className="bg-blue-50 active:bg-blue-100 rounded-full w-10 h-10 flex items-center justify-center text-xl mt-1">
             ⚙️
           </button>
         </div>
@@ -64,13 +66,13 @@ export default function DashboardPage() {
       <main className="px-4 py-4 space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <SummaryCard href="/goals" icon="🎯" label="目標管理" value={`${goalInProgress}件 進行中`} sub={`完了 ${goalDone} / 全${goals.length}件`} color="blue" />
-          <SummaryCard href="/routine" icon="✅" label="今月のルーティン" value={`${monthRoutineChecked} / ${routine.length} 完了`} sub={`全${routine.length}件のルーティン`} color="lime" />
+          <SummaryCard href="/routine" icon="✅" label="今月のルーティン" value={`${monthRoutineChecked} / ${routine.length} 完了`} sub={`全${routine.length}件のルーティン`} color="green" />
           <SummaryCard href="/improvements" icon="💡" label="改善台帳" value={`${improvInProgress}件 進行中`} sub={`完了 ${improvDone} / 全${improvements.length}件`} color="yellow" />
           <SummaryCard href="/gantt" icon="📅" label="年間ガントチャート" value="2026年度計画" sub="4月〜3月" color="purple" />
         </div>
 
         {/* 今月のルーティン */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
             <h2 className="font-bold text-gray-800">今月のルーティン</h2>
             <Link href="/routine" className="text-xs text-blue-500">すべて見る</Link>
@@ -97,9 +99,9 @@ export default function DashboardPage() {
         </section>
 
         {/* 優先目標 */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="font-bold text-gray-800">◎ 優先目標（進行中）</h2>
+            <h2 className="font-bold text-gray-800">優先目標（進行中）</h2>
             <Link href="/goals" className="text-xs text-blue-500">すべて見る</Link>
           </div>
           <div className="divide-y divide-gray-50">
@@ -118,9 +120,9 @@ export default function DashboardPage() {
         </section>
 
         {/* 改善台帳 */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="font-bold text-gray-800">💡 改善台帳（進行中）</h2>
+            <h2 className="font-bold text-gray-800">改善台帳（進行中）</h2>
             <Link href="/improvements" className="text-xs text-blue-500">すべて見る</Link>
           </div>
           {improvements.filter((i) => i.status === "進行中").length === 0 ? (
@@ -146,20 +148,20 @@ export default function DashboardPage() {
 
 function SummaryCard({ href, icon, label, value, sub, color }: {
   href: string; icon: string; label: string; value: string; sub: string;
-  color: "blue" | "lime" | "yellow" | "purple";
+  color: "blue" | "green" | "yellow" | "purple";
 }) {
   const cls = {
-    blue: { bg: "bg-blue-50 border-blue-100", text: "text-blue-700" },
-    lime: { bg: "bg-lime-50 border-lime-100", text: "text-lime-700" },
-    yellow: { bg: "bg-yellow-50 border-yellow-100", text: "text-yellow-700" },
-    purple: { bg: "bg-purple-50 border-purple-100", text: "text-purple-700" },
+    blue:   { border: "border-l-blue-400",   icon: "bg-blue-50",   text: "text-blue-600" },
+    green:  { border: "border-l-green-400",  icon: "bg-green-50",  text: "text-green-600" },
+    yellow: { border: "border-l-yellow-400", icon: "bg-yellow-50", text: "text-yellow-600" },
+    purple: { border: "border-l-purple-400", icon: "bg-purple-50", text: "text-purple-600" },
   }[color];
   return (
     <Link href={href}>
-      <div className={`${cls.bg} border rounded-2xl p-3 active:opacity-70`}>
-        <p className="text-2xl">{icon}</p>
-        <p className={`text-xs font-medium ${cls.text} mt-1`}>{label}</p>
-        <p className="text-sm font-bold text-gray-800 mt-0.5 leading-tight">{value}</p>
+      <div className={`bg-white border border-gray-100 border-l-4 ${cls.border} rounded-2xl p-3 active:bg-gray-50`}>
+        <div className={`w-8 h-8 ${cls.icon} rounded-xl flex items-center justify-center text-lg mb-2`}>{icon}</div>
+        <p className={`text-xs font-medium ${cls.text}`}>{label}</p>
+        <p className="text-sm font-bold text-gray-900 mt-0.5 leading-tight">{value}</p>
         <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
       </div>
     </Link>

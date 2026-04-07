@@ -9,6 +9,8 @@ import { Goal, GoalStatus, Priority } from "@/types";
 const STATUS_LABELS: Record<GoalStatus, string> = { not_started: "未着手", in_progress: "進行中", completed: "完了" };
 const STATUS_COLORS: Record<GoalStatus, string> = { not_started: "bg-gray-100 text-gray-600", in_progress: "bg-blue-100 text-blue-700", completed: "bg-green-100 text-green-700" };
 const PRIORITY_COLORS: Record<Priority, string> = { "◎": "bg-red-100 text-red-600", "○": "bg-yellow-100 text-yellow-700", "△": "bg-gray-100 text-gray-500" };
+const PRIORITY_LABELS: Record<Priority, string> = { "◎": "最優先", "○": "通常", "△": "低" };
+const PRIORITY_BORDER: Record<Priority, string> = { "◎": "border-l-red-400", "○": "border-l-blue-400", "△": "border-l-gray-300" };
 
 const EMPTY_GOAL = { priority: "○" as Priority, category: "製造管理", objective: "", specificActions: "", kpi: "", deadline: "", resultComment: "", status: "not_started" as GoalStatus };
 
@@ -123,24 +125,34 @@ export default function GoalsPage() {
 
       <main className="px-4 py-4 space-y-3">
         {filtered.map((goal) => (
-          <div key={goal.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden active:bg-gray-50" onClick={() => setSelectedGoal(goal)}>
-            <div className="p-4">
-              <div className="flex items-start gap-2">
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${PRIORITY_COLORS[goal.priority]}`}>{goal.priority}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs text-gray-400">No.{goal.no}</span>
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{goal.category}</span>
-                  </div>
-                  <p className="font-bold text-gray-900 mt-1">{goal.objective}</p>
+          <div key={goal.id}
+            className={`bg-white rounded-2xl border border-gray-100 border-l-4 ${PRIORITY_BORDER[goal.priority]} overflow-hidden active:bg-gray-50`}
+            onClick={() => setSelectedGoal(goal)}>
+            {/* カードヘッダー */}
+            <div className="px-4 pt-3 pb-2 flex items-center gap-2">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${PRIORITY_COLORS[goal.priority]}`}>
+                {PRIORITY_LABELS[goal.priority]}
+              </span>
+              <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">{goal.category}</span>
+              <div className="flex-1" />
+              <button onClick={(e) => { e.stopPropagation(); cycleStatus(goal); }}
+                className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${STATUS_COLORS[goal.status]}`}>
+                {STATUS_LABELS[goal.status]}
+              </button>
+            </div>
+            {/* タイトル */}
+            <div className="px-4 pb-3">
+              <p className="font-bold text-gray-900 text-base leading-snug">{goal.objective}</p>
+              {(goal.kpi || goal.deadline) && (
+                <div className="mt-2 pt-2 border-t border-gray-50 flex flex-wrap gap-3">
+                  {goal.kpi && (
+                    <span className="text-xs text-gray-500"><span className="text-gray-400 mr-1">KPI</span>{goal.kpi}</span>
+                  )}
+                  {goal.deadline && (
+                    <span className="text-xs text-blue-500 font-medium"><span className="text-gray-400 mr-1">期限</span>{goal.deadline}</span>
+                  )}
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); cycleStatus(goal); }}
-                  className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${STATUS_COLORS[goal.status]}`}>
-                  {STATUS_LABELS[goal.status]}
-                </button>
-              </div>
-              {goal.kpi && <p className="text-xs text-gray-500 mt-2">KPI: {goal.kpi}</p>}
-              {goal.deadline && <p className="text-xs text-gray-400 mt-0.5">期限: {goal.deadline}</p>}
+              )}
             </div>
           </div>
         ))}

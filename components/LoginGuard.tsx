@@ -242,7 +242,7 @@ function CreateAccountScreen({
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="例: 田中"
+              placeholder="ユーザー名"
               className="w-full bg-white/20 text-white placeholder-white/40 rounded-2xl px-4 py-4 text-lg text-center focus:outline-none focus:ring-2 focus:ring-white/50"
               autoFocus
               maxLength={20}
