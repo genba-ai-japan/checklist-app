@@ -372,17 +372,31 @@ export default function MindMapPage() {
           onTouchEnd={onTouchEnd}
         >
           <g transform={`translate(${offset.x},${offset.y}) scale(${scale})`}>
+            {/* 接続線 ＋ 線上のテキストラベル */}
             {nodes.map((node) => {
               if (!node.parentId) return null;
               const p = pos.get(node.parentId), c = pos.get(node.id);
               if (!p || !c) return null;
+              const x1 = p.x + NW, y1 = p.y + NH / 2;
+              const x2 = c.x, y2 = c.y + NH / 2;
+              const lx = (x1 + x2) / 2, ly = (y1 + y2) / 2;
+              const raw = node.text;
+              const label = raw.length > 13 ? raw.slice(0, 12) + "…" : raw;
+              const lw = label.length * 6 + 14;
               return (
-                <path key={`l-${node.id}`}
-                  d={bezierPath(p.x + NW, p.y + NH / 2, c.x, c.y + NH / 2)}
-                  fill="none" stroke={node.color} strokeWidth={2} strokeOpacity={0.5}
-                />
+                <g key={`edge-${node.id}`}>
+                  <path d={bezierPath(x1, y1, x2, y2)}
+                    fill="none" stroke={node.color} strokeWidth={2} strokeOpacity={0.35} />
+                  <rect x={lx - lw / 2} y={ly - 18} width={lw} height={16}
+                    rx={8} fill="white" stroke={node.color} strokeWidth={1} strokeOpacity={0.5} />
+                  <text x={lx} y={ly - 7} textAnchor="middle"
+                    fill={node.color} fontSize={10} fontWeight={700} opacity={0.95}>
+                    {label}
+                  </text>
+                </g>
               );
             })}
+            {/* ノード */}
             {nodes.map((node) => {
               const p = pos.get(node.id);
               if (!p) return null;
@@ -405,6 +419,27 @@ export default function MindMapPage() {
                       {node.text}
                     </div>
                   </foreignObject>
+                </g>
+              );
+            })}
+            {/* ➕ ボタン（各ノードの右上に配置） */}
+            {nodes.map((node) => {
+              const p = pos.get(node.id);
+              if (!p) return null;
+              return (
+                <g key={`add-${node.id}`} data-node="true"
+                  transform={`translate(${p.x + NW},${p.y})`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelected(node.id);
+                    setInputText("");
+                    setInputMode("add");
+                    setShowInput(true);
+                  }}
+                  style={{ cursor: "pointer" }}>
+                  <circle r={11} fill="#eff6ff" stroke="#93c5fd" strokeWidth={1.5} />
+                  <text textAnchor="middle" dominantBaseline="central"
+                    fill="#2563eb" fontSize={18} fontWeight={700} y={1}>+</text>
                 </g>
               );
             })}
