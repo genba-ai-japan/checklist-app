@@ -341,7 +341,7 @@ export default function MindMapPage() {
       {/* ヘッダー */}
       <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0 z-10">
         <div>
-          <h1 className="text-lg font-bold text-gray-900">🧠 マインドマップ</h1>
+          <h1 className="text-lg font-bold text-gray-900">🗺️ マインドマップ</h1>
           <div className="flex items-center gap-1.5 mt-0.5">
             {activeFrameworkId && (() => { const fw = FRAMEWORKS.find(f => f.id === activeFrameworkId); return fw ? (
               <span className="text-[10px] bg-purple-100 text-purple-700 font-bold px-2 py-0.5 rounded-full">{fw.icon} {fw.name}</span>
@@ -451,7 +451,7 @@ export default function MindMapPage() {
         {nodes.length <= 1 && !showFwSelect && !pendingFw && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-white/90 rounded-2xl p-6 text-center shadow-sm mx-8">
-              <p className="text-3xl mb-3">🧠</p>
+              <p className="text-3xl mb-3">🗺️</p>
               <p className="text-sm font-bold text-gray-700 mb-1">フレームワークを選んで始めよう</p>
               <p className="text-xs text-gray-400">または、ルートをタップして手動で作成</p>
             </div>
