@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "機械設定フォト台帳",
-  description: "食品工場向け機械設定値フォト台帳アプリ",
+  title: "マイノート",
+  description: "プライベート記録アプリ",
 };
 
 export const viewport: Viewport = {
