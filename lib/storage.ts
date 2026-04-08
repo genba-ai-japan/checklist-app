@@ -6,6 +6,8 @@ import type {
   WorkoutExercise,
   TravelPlan,
   TravelItem,
+  DiaryEntry,
+  DiaryAnswer,
 } from "@/types";
 
 // ── helpers ────────────────────────────────────────────────
@@ -282,4 +284,43 @@ export function updateTravelItem(
       save(TRAVEL_KEY, plans);
     }
   }
+}
+
+// ── Diary ─────────────────────────────────────────────────────
+const DIARY_KEY = "personal_diary_entries_v1";
+
+export function getDiaryEntries(): DiaryEntry[] {
+  return load<DiaryEntry>(DIARY_KEY, []).sort(
+    (a, b) => b.date.localeCompare(a.date)
+  );
+}
+
+export function getDiaryEntry(date: string): DiaryEntry | null {
+  return load<DiaryEntry>(DIARY_KEY, []).find((e) => e.date === date) ?? null;
+}
+
+export function saveDiaryEntry(date: string, answers: DiaryAnswer[]): DiaryEntry {
+  const entries = load<DiaryEntry>(DIARY_KEY, []);
+  const now = new Date().toISOString();
+  const existing = entries.find((e) => e.date === date);
+  if (existing) {
+    existing.answers = answers;
+    existing.updatedAt = now;
+    save(DIARY_KEY, entries);
+    return existing;
+  }
+  const entry: DiaryEntry = {
+    id: newId(),
+    date,
+    answers,
+    createdAt: now,
+    updatedAt: now,
+  };
+  entries.push(entry);
+  save(DIARY_KEY, entries);
+  return entry;
+}
+
+export function deleteDiaryEntry(date: string): void {
+  save(DIARY_KEY, load<DiaryEntry>(DIARY_KEY, []).filter((e) => e.date !== date));
 }

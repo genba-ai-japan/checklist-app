@@ -38,6 +38,20 @@ export interface WorkoutSession {
   exercises: WorkoutExercise[];
 }
 
+// ── Diary ─────────────────────────────────────────────────────
+export interface DiaryAnswer {
+  question: string;
+  answer: string;
+}
+
+export interface DiaryEntry {
+  id: string;
+  date: string;      // YYYY-MM-DD
+  answers: DiaryAnswer[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ── Travel ───────────────────────────────────────────────────
 export interface TravelItem {
   id: string;

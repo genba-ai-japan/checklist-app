@@ -38,6 +38,13 @@ const sections = [
     desc: "スケジュールを作成・管理",
     color: "from-sky-500 to-sky-600",
   },
+  {
+    href: "/diary",
+    icon: "📔",
+    label: "日記",
+    desc: "質問に答えながら今日を振り返る",
+    color: "from-rose-500 to-rose-600",
+  },
 ];
 
 export default function HomePage() {
