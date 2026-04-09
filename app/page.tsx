@@ -34,7 +34,14 @@ export default function HomePage() {
         <div className="px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <h1 className="text-xl font-bold text-gray-900">🏭 機械設定台帳</h1>
-            <span className="text-sm text-gray-400">{records.length}件</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-400">{records.length}件</span>
+              <Link href="/analysis">
+                <button className="text-xs bg-orange-50 text-orange-600 font-bold px-3 py-1.5 rounded-xl active:bg-orange-100">
+                  📊 分析
+                </button>
+              </Link>
+            </div>
           </div>
           {/* 検索 */}
           <div className="relative">
