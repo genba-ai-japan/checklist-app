@@ -13,7 +13,7 @@ import type { TodayTask } from "@/types";
 const OTHER_SECTIONS = [
   { href: "/future", icon: "🌟", label: "今後やりたいこと", desc: "いつかやりたいことリスト", color: "from-purple-500 to-purple-600" },
   { href: "/annual", icon: "📅", label: "毎年やること", desc: "年間の定番タスク", color: "from-green-500 to-green-600" },
-  { href: "/workout", icon: "💪", label: "筋トレ記録", desc: "種目・重量・回数を記録", color: "from-orange-500 to-orange-600" },
+  { href: "/workout", icon: "🏋️", label: "トレーニング記録", desc: "筋トレ・ランニングを記録", color: "from-orange-500 to-orange-600" },
   { href: "/travel", icon: "✈️", label: "旅行プラン", desc: "スケジュールを作成・管理", color: "from-sky-500 to-sky-600" },
   { href: "/diary", icon: "📔", label: "日記", desc: "質問に答えながら今日を振り返る", color: "from-rose-500 to-rose-600" },
 ];

@@ -134,11 +134,15 @@ export function getWorkoutSession(id: string): WorkoutSession | null {
   return load<WorkoutSession>(WORKOUT_KEY, []).find((s) => s.id === id) ?? null;
 }
 
-export function createWorkoutSession(date?: string): WorkoutSession {
+export function createWorkoutSession(
+  type: "strength" | "running" = "strength",
+  date?: string
+): WorkoutSession {
   const sessions = load<WorkoutSession>(WORKOUT_KEY, []);
   const session: WorkoutSession = {
     id: newId(),
     date: date ?? toDateStr(),
+    type,
     exercises: [],
   };
   sessions.push(session);
@@ -180,7 +184,10 @@ export function deleteExercise(sessionId: string, exerciseId: string): void {
   }
 }
 
-export function updateWorkoutSession(id: string, patch: Partial<Pick<WorkoutSession, "date" | "memo">>): void {
+export function updateWorkoutSession(
+  id: string,
+  patch: Partial<Pick<WorkoutSession, "date" | "memo" | "running">>
+): void {
   const sessions = load<WorkoutSession>(WORKOUT_KEY, []);
   const s = sessions.find((x) => x.id === id);
   if (s) { Object.assign(s, patch); save(WORKOUT_KEY, sessions); }

@@ -31,11 +31,21 @@ export interface WorkoutExercise {
   sets: number;
 }
 
+export interface RunningData {
+  distanceKm: number;
+  durationSec: number; // 合計秒数
+  route?: string;      // コース・ルートメモ
+}
+
 export interface WorkoutSession {
   id: string;
   date: string; // YYYY-MM-DD
+  type: "strength" | "running"; // 筋トレ or ランニング
   memo?: string;
+  // 筋トレ用
   exercises: WorkoutExercise[];
+  // ランニング用
+  running?: RunningData;
 }
 
 // ── Diary ─────────────────────────────────────────────────────
