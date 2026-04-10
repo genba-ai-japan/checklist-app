@@ -104,7 +104,7 @@ export default function ImprovementDetailPage() {
         const imp = getImprovement(id);
         if (imp) updateImprovement({ ...imp, ...form });
       }
-      router.push("/analysis");
+      router.push("/");
     } finally {
       setSaving(false);
     }
@@ -114,7 +114,7 @@ export default function ImprovementDetailPage() {
   async function handleDelete() {
     setDeleting(true);
     deleteImprovement(id);
-    router.push("/analysis");
+    router.push("/");
   }
 
   if (loading) {
