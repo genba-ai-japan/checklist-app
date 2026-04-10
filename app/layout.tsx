@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import UpdateBanner from "@/components/UpdateBanner";
+import SyncProvider from "@/components/SyncProvider";
 
 export const metadata: Metadata = {
   title: "マイノート",
@@ -22,6 +23,7 @@ export default function RootLayout({
     <html lang="ja">
       <body className="antialiased min-h-screen">
         <UpdateBanner />
+        <SyncProvider />
         {children}
       </body>
     </html>

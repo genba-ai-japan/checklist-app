@@ -9,6 +9,7 @@ import type {
   DiaryEntry,
   DiaryAnswer,
 } from "@/types";
+import { pushToCloud } from "./sync";
 
 // ── helpers ────────────────────────────────────────────────
 function load<T>(key: string, defaultValue: T[]): T[] {
@@ -21,6 +22,7 @@ function load<T>(key: string, defaultValue: T[]): T[] {
 function save<T>(key: string, data: T[]): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(key, JSON.stringify(data));
+  pushToCloud(key, data); // クラウドへ同期（fire-and-forget）
 }
 
 function newId(): string { return crypto.randomUUID(); }
