@@ -41,6 +41,7 @@ export default function ImprovementDetailPage() {
   const [form, setForm] = useState<Omit<Improvement, "id" | "createdAt">>(
     emptyImprovement(stepIdParam)
   );
+  const [originalImp, setOriginalImp] = useState<Improvement | null>(null);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -48,13 +49,15 @@ export default function ImprovementDetailPage() {
 
   // 既存データ読み込み
   useEffect(() => {
-    if (isNew) return;
-    const imp = getImprovement(id);
-    if (imp) {
-      const { id: _id, createdAt: _c, ...rest } = imp;
-      setForm(rest);
-    }
-    setLoading(false);
+    if (isNew) { setLoading(false); return; }
+    getImprovement(id).then((imp) => {
+      if (imp) {
+        setOriginalImp(imp);
+        const { id: _id, createdAt: _c, ...rest } = imp;
+        setForm(rest);
+      }
+      setLoading(false);
+    });
   }, [id, isNew]);
 
   const step = PROCESS_STEPS.find((s) => s.id === form.stepId);
@@ -99,10 +102,9 @@ export default function ImprovementDetailPage() {
     setSaving(true);
     try {
       if (isNew) {
-        createImprovement(form);
-      } else {
-        const imp = getImprovement(id);
-        if (imp) updateImprovement({ ...imp, ...form });
+        await createImprovement(form);
+      } else if (originalImp) {
+        await updateImprovement({ ...originalImp, ...form });
       }
       router.push("/");
     } finally {
@@ -113,7 +115,7 @@ export default function ImprovementDetailPage() {
   // 削除
   async function handleDelete() {
     setDeleting(true);
-    deleteImprovement(id);
+    await deleteImprovement(id);
     router.push("/");
   }
 

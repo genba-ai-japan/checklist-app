@@ -1,7 +1,5 @@
 import { Improvement, ProcessStep } from "@/types";
 
-const IMPROVEMENTS_KEY = "factory_improvements_v1";
-
 export const PROCESS_STEPS: ProcessStep[] = [
   { id: "step-1", name: "原料受入",    icon: "🚛", order: 1 },
   { id: "step-2", name: "計量・配合",  icon: "⚖️", order: 2 },
@@ -13,53 +11,42 @@ export const PROCESS_STEPS: ProcessStep[] = [
   { id: "step-8", name: "保管・出荷",  icon: "🏭", order: 8 },
 ];
 
-function loadAll(): Improvement[] {
-  if (typeof window === "undefined") return [];
-  const raw = localStorage.getItem(IMPROVEMENTS_KEY);
-  if (!raw) return [];
-  return JSON.parse(raw) as Improvement[];
+export async function getAllImprovements(): Promise<{ items: Improvement[]; lastModified: string }> {
+  const res = await fetch("/api/improvements", { cache: "no-store" });
+  return res.json();
 }
 
-function saveAll(improvements: Improvement[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(IMPROVEMENTS_KEY, JSON.stringify(improvements));
+export async function getImprovement(id: string): Promise<Improvement | null> {
+  const res = await fetch(`/api/improvements/${id}`, { cache: "no-store" });
+  if (!res.ok) return null;
+  return res.json();
 }
 
-export function getAllImprovements(): Improvement[] {
-  return loadAll();
-}
-
-export function getImprovementsByStep(stepId: string): Improvement[] {
-  return loadAll().filter((i) => i.stepId === stepId);
-}
-
-export function getImprovement(id: string): Improvement | null {
-  return loadAll().find((i) => i.id === id) ?? null;
-}
-
-export function createImprovement(
+export async function createImprovement(
   data: Omit<Improvement, "id" | "createdAt">
-): Improvement {
-  const all = loadAll();
-  const improvement: Improvement = {
-    ...data,
-    id: crypto.randomUUID(),
-    createdAt: new Date().toISOString(),
-  };
-  all.push(improvement);
-  saveAll(all);
-  return improvement;
+): Promise<Improvement> {
+  const res = await fetch("/api/improvements", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
 }
 
-export function updateImprovement(improvement: Improvement): void {
-  const all = loadAll();
-  const idx = all.findIndex((i) => i.id === improvement.id);
-  if (idx >= 0) {
-    all[idx] = improvement;
-    saveAll(all);
-  }
+export async function updateImprovement(improvement: Improvement): Promise<void> {
+  await fetch(`/api/improvements/${improvement.id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(improvement),
+  });
 }
 
-export function deleteImprovement(id: string): void {
-  saveAll(loadAll().filter((i) => i.id !== id));
+export async function deleteImprovement(id: string): Promise<void> {
+  await fetch(`/api/improvements/${id}`, { method: "DELETE" });
+}
+
+export async function getLastModified(): Promise<string> {
+  const res = await fetch("/api/improvements/meta", { cache: "no-store" });
+  const data = await res.json();
+  return data.lastModified;
 }
