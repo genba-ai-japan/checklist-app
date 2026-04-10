@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
+const BUILD_TIME = new Date().toISOString();
+
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_BUILD_TIME: BUILD_TIME,
+  },
   images: {
     // ローカルのBase64データURLを許可
     dangerouslyAllowSVG: false,
