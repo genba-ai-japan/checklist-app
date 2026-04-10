@@ -197,6 +197,30 @@ export function deleteWorkoutSession(id: string): void {
   save(WORKOUT_KEY, load<WorkoutSession>(WORKOUT_KEY, []).filter((s) => s.id !== id));
 }
 
+// 同タイプの直前セッションを取得（なぞる用）
+export function getPrevSessionOfType(
+  currentId: string,
+  type: "strength" | "running"
+): WorkoutSession | null {
+  const all = load<WorkoutSession>(WORKOUT_KEY, [])
+    .filter((s) => s.id !== currentId && s.type === type)
+    .sort((a, b) => b.date.localeCompare(a.date));
+  return all[0] ?? null;
+}
+
+// 種目を一括コピー（なぞる用）
+export function bulkCopyExercises(
+  targetId: string,
+  exercises: WorkoutExercise[]
+): void {
+  const sessions = load<WorkoutSession>(WORKOUT_KEY, []);
+  const s = sessions.find((x) => x.id === targetId);
+  if (s) {
+    s.exercises = exercises.map((e) => ({ ...e, id: newId() }));
+    save(WORKOUT_KEY, sessions);
+  }
+}
+
 // commonly used equipment names (for suggestions)
 export function getEquipmentHistory(): string[] {
   const sessions = load<WorkoutSession>(WORKOUT_KEY, []);
