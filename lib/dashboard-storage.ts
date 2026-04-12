@@ -5,6 +5,17 @@ function k(base: string) {
   return `${base}_${getCurrentAccountId()}`;
 }
 
+/** Fire-and-forget push to sync server so other devices get the update. */
+function pushToServer(fullKey: string, data: unknown): void {
+  if (typeof window === "undefined") return;
+  const accountId = getCurrentAccountId();
+  fetch("/api/sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ accountId, key: fullKey, data }),
+  }).catch(() => {/* ignore network errors */});
+}
+
 // ─── Goals ────────────────────────────────────────────────────────────────────
 const G = "dashboard_goals_v1";
 
@@ -16,7 +27,9 @@ export function loadGoals(): Goal[] {
 }
 export function saveGoals(goals: Goal[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(k(G), JSON.stringify(goals));
+  const key = k(G);
+  localStorage.setItem(key, JSON.stringify(goals));
+  pushToServer(key, goals);
 }
 export function addGoal(data: Omit<Goal, "id">): Goal {
   const goals = loadGoals();
@@ -44,7 +57,9 @@ export function loadCategories(): string[] {
 }
 export function saveCategories(categories: string[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(k(CAT), JSON.stringify(categories));
+  const key = k(CAT);
+  localStorage.setItem(key, JSON.stringify(categories));
+  pushToServer(key, categories);
 }
 
 // ─── Routine ──────────────────────────────────────────────────────────────────
@@ -58,7 +73,9 @@ export function loadRoutine(): RoutineItem[] {
 }
 export function saveRoutine(items: RoutineItem[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(k(R), JSON.stringify(items));
+  const key = k(R);
+  localStorage.setItem(key, JSON.stringify(items));
+  pushToServer(key, items);
 }
 export function toggleRoutineCheck(id: string, dateKey: string): void {
   const items = loadRoutine().map((item) => {
@@ -92,7 +109,9 @@ export function loadImprovements(): ImprovementItem[] {
 }
 export function saveImprovements(items: ImprovementItem[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(k(I), JSON.stringify(items));
+  const key = k(I);
+  localStorage.setItem(key, JSON.stringify(items));
+  pushToServer(key, items);
 }
 export function addImprovement(data: Omit<ImprovementItem, "id" | "no">): ImprovementItem {
   const items = loadImprovements();
@@ -142,7 +161,9 @@ export function loadGanttTasks(): GanttTask[] {
 }
 export function saveGanttTasks(tasks: GanttTask[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(k(GA), JSON.stringify(tasks));
+  const key = k(GA);
+  localStorage.setItem(key, JSON.stringify(tasks));
+  pushToServer(key, tasks);
 }
 export function addGanttTask(data: Omit<GanttTask, "id">): GanttTask {
   const tasks = loadGanttTasks();
@@ -167,7 +188,9 @@ export function loadMemos(): MemoItem[] {
 }
 export function saveMemos(items: MemoItem[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(k(ME), JSON.stringify(items));
+  const key = k(ME);
+  localStorage.setItem(key, JSON.stringify(items));
+  pushToServer(key, items);
 }
 
 // ─── MindMap ──────────────────────────────────────────────────────────────────
@@ -183,7 +206,9 @@ export function loadMindNodes(): MindNode[] {
 }
 export function saveMindNodes(nodes: MindNode[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(k(MM), JSON.stringify(nodes));
+  const key = k(MM);
+  localStorage.setItem(key, JSON.stringify(nodes));
+  pushToServer(key, nodes);
 }
 
 // ─── Export All (for CSV) ─────────────────────────────────────────────────────

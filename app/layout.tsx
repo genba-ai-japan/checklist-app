@@ -3,6 +3,7 @@ import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import LoginGuard from "@/components/LoginGuard";
 import UpdateBanner from "@/components/UpdateBanner";
+import SyncWatcher from "@/components/SyncWatcher";
 
 export const metadata: Metadata = {
   title: "2026年度 業務ダッシュボード",
@@ -25,6 +26,7 @@ export default function RootLayout({
       <body className="antialiased min-h-screen bg-gray-50">
         <LoginGuard>
           <UpdateBanner />
+          <SyncWatcher />
           {children}
           <BottomNav />
         </LoginGuard>
