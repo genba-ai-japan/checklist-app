@@ -34,6 +34,10 @@ export default function DashboardPage() {
   const [editingMemoId, setEditingMemoId] = useState<string | null>(null);
   const [editingMemoText, setEditingMemoText] = useState("");
   const memoInputRef = useRef<HTMLInputElement>(null);
+  const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const dragState = useRef<{ id: string; startIdx: number } | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   useEffect(() => {
     setGoals(loadGoals());
@@ -61,6 +65,56 @@ export default function DashboardPage() {
   function startEditMemo(m: MemoItem) {
     setEditingMemoId(m.id);
     setEditingMemoText(m.text);
+  }
+
+  function moveMemo(id: string, dir: -1 | 1) {
+    const idx = memos.findIndex((m) => m.id === id);
+    const next = idx + dir;
+    if (next < 0 || next >= memos.length) return;
+    const updated = [...memos];
+    [updated[idx], updated[next]] = [updated[next], updated[idx]];
+    setMemos(updated);
+    saveMemos(updated);
+  }
+
+  function getDropIndex(clientY: number): number {
+    let best = 0, bestDist = Infinity;
+    memos.forEach((m, i) => {
+      const el = rowRefs.current.get(m.id);
+      if (!el) return;
+      const { top, height } = el.getBoundingClientRect();
+      const dist = Math.abs(clientY - (top + height / 2));
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    });
+    return best;
+  }
+
+  function onGripTouchStart(e: React.TouchEvent, id: string, idx: number) {
+    e.stopPropagation();
+    dragState.current = { id, startIdx: idx };
+    setDraggingId(id);
+    setDragOverIdx(idx);
+  }
+
+  function onGripTouchMove(e: React.TouchEvent) {
+    if (!dragState.current) return;
+    e.preventDefault();
+    setDragOverIdx(getDropIndex(e.touches[0].clientY));
+  }
+
+  function onGripTouchEnd() {
+    if (!dragState.current || dragOverIdx === null) {
+      dragState.current = null; setDraggingId(null); setDragOverIdx(null); return;
+    }
+    const from = dragState.current.startIdx;
+    if (dragOverIdx !== from) {
+      const updated = [...memos];
+      const [item] = updated.splice(from, 1);
+      updated.splice(dragOverIdx, 0, item);
+      setMemos(updated);
+      saveMemos(updated);
+    }
+    dragState.current = null; setDraggingId(null); setDragOverIdx(null);
   }
 
   function commitEditMemo() {
@@ -109,27 +163,55 @@ export default function DashboardPage() {
             <h2 className="font-bold text-gray-800 flex-1">メモ</h2>
           </div>
           <div className="px-4 py-2">
-            {memos.map((m) => (
-              <div key={m.id} className="flex items-center gap-2 py-1.5 border-b border-gray-50 last:border-0">
-                <span className="text-lime-500 text-sm shrink-0">•</span>
-                {editingMemoId === m.id ? (
-                  <input
-                    autoFocus
-                    value={editingMemoText}
-                    onChange={(e) => setEditingMemoText(e.target.value)}
-                    onBlur={commitEditMemo}
-                    onKeyDown={(e) => { if (e.key === "Enter") commitEditMemo(); if (e.key === "Escape") { setEditingMemoId(null); } }}
-                    className="flex-1 text-sm text-gray-800 bg-lime-50 rounded-lg px-2 py-0.5 focus:outline-none"
-                  />
-                ) : (
+            {memos.map((m, idx) => {
+              const isDragging = draggingId === m.id;
+              const isDropTarget = draggingId !== null && dragOverIdx === idx && draggingId !== m.id;
+              return (
+                <div
+                  key={m.id}
+                  ref={(el) => { if (el) rowRefs.current.set(m.id, el); else rowRefs.current.delete(m.id); }}
+                  className={`flex items-center gap-2 py-1.5 border-b border-gray-50 last:border-0 transition-opacity ${isDragging ? "opacity-30" : "opacity-100"} ${isDropTarget ? "border-t-2 border-t-lime-400" : ""}`}
+                >
+                  {/* ドラッグハンドル */}
                   <span
-                    className="flex-1 text-sm text-gray-800 cursor-pointer"
-                    onClick={() => startEditMemo(m)}
-                  >{m.text}</span>
-                )}
-                <button onClick={() => deleteMemo(m.id)} className="text-gray-300 active:text-red-400 text-xs px-1 shrink-0">✕</button>
-              </div>
-            ))}
+                    className="text-gray-300 text-base select-none shrink-0 cursor-grab active:cursor-grabbing touch-none px-0.5"
+                    onTouchStart={(e) => onGripTouchStart(e, m.id, idx)}
+                    onTouchMove={onGripTouchMove}
+                    onTouchEnd={onGripTouchEnd}
+                  >⠿</span>
+                  <span className="text-lime-500 text-sm shrink-0">•</span>
+                  {editingMemoId === m.id ? (
+                    <input
+                      autoFocus
+                      value={editingMemoText}
+                      onChange={(e) => setEditingMemoText(e.target.value)}
+                      onBlur={commitEditMemo}
+                      onKeyDown={(e) => { if (e.key === "Enter") commitEditMemo(); if (e.key === "Escape") { setEditingMemoId(null); } }}
+                      className="flex-1 text-sm text-gray-800 bg-lime-50 rounded-lg px-2 py-0.5 focus:outline-none"
+                    />
+                  ) : (
+                    <span
+                      className="flex-1 text-sm text-gray-800 cursor-pointer"
+                      onClick={() => startEditMemo(m)}
+                    >{m.text}</span>
+                  )}
+                  {/* 上下ボタン */}
+                  <div className="flex flex-col shrink-0">
+                    <button
+                      onClick={() => moveMemo(m.id, -1)}
+                      disabled={idx === 0}
+                      className="text-gray-300 active:text-lime-500 disabled:opacity-20 leading-none text-[10px] px-0.5"
+                    >▲</button>
+                    <button
+                      onClick={() => moveMemo(m.id, 1)}
+                      disabled={idx === memos.length - 1}
+                      className="text-gray-300 active:text-lime-500 disabled:opacity-20 leading-none text-[10px] px-0.5"
+                    >▼</button>
+                  </div>
+                  <button onClick={() => deleteMemo(m.id)} className="text-gray-300 active:text-red-400 text-xs px-1 shrink-0">✕</button>
+                </div>
+              );
+            })}
             {memos.length === 0 && (
               <p className="text-xs text-gray-300 py-2">タップして入力 → 追加できます</p>
             )}
